@@ -2,701 +2,1205 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Keyboard Tester — Проверка клавиатуры</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Проверка клавиатуры онлайн: подсветка нажатых клавиш, история нажатий, rollover/ghosting тест. Ничего не отправляется на сервер." />
+  <meta name="theme-color" content="#0b0b12" />
+  <meta property="og:title" content="Keyboard Tester" />
+  <meta property="og:description" content="Проверка клавиатуры: подсветка клавиш, лог, rollover/ghosting тест." />
+  <meta property="og:type" content="website" />
+  <title>Keyboard Tester</title>
+
   <style>
-    :root {
-      --bg: #050509;
-      --bg-card: #11121a;
-      --bg-soft: #1a1b26;
-      --accent: #6c5ce7;
-      --accent-soft: rgba(108, 92, 231, 0.18);
-      --text-main: #f5f5f7;
-      --text-muted: #a0a3b1;
-      --border: #2b2e3b;
-      --danger: #ff7675;
-      --success: #55efc4;
-      --shadow-soft: 0 24px 60px rgba(0, 0, 0, 0.65);
-      --radius-lg: 18px;
-      --radius-pill: 999px;
+    :root{
+      --bg: #07070d;
+      --bg2:#0b0b12;
+      --card:#111225;
+      --card2:#151738;
+      --text:#f6f6fb;
+      --muted:#a8abc6;
+      --border: rgba(255,255,255,.10);
+      --border2: rgba(255,255,255,.06);
+      --accent:#6c5ce7;
+      --accent2:#a29bff;
+      --good:#55efc4;
+      --warn:#ffeaa7;
+      --bad:#ff7675;
+      --shadow: 0 30px 80px rgba(0,0,0,.65);
+      --radius: 18px;
+      --radius2: 14px;
+      --kbd:#0e0f1d;
+      --kbd2:#12142a;
+      --kbdPressed: rgba(108,92,231,.22);
+      --kbdPressedBorder: rgba(162,155,255,.85);
+      --kbdText:#eaeafd;
+      --kbdMuted:#b6b9d8;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    [data-theme="light"]{
+      --bg: #f5f6ff;
+      --bg2:#edf0ff;
+      --card:#ffffff;
+      --card2:#ffffff;
+      --text:#0b0b12;
+      --muted:#4c506d;
+      --border: rgba(10,10,18,.12);
+      --border2: rgba(10,10,18,.08);
+      --shadow: 0 18px 55px rgba(20,20,40,.15);
+      --kbd:#f3f5ff;
+      --kbd2:#eef1ff;
+      --kbdPressed: rgba(108,92,231,.16);
+      --kbdPressedBorder: rgba(108,92,231,.55);
+      --kbdText:#0b0b12;
+      --kbdMuted:#3c4160;
     }
 
-    body {
-      min-height: 100vh;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #161827 0, #050509 40%, #020308 100%);
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    body{
+      min-height:100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 10% -10%, rgba(108,92,231,.26), transparent 60%),
+        radial-gradient(900px 600px at 90% 0%, rgba(162,155,255,.18), transparent 55%),
+        linear-gradient(180deg, var(--bg2), var(--bg));
+      padding: 26px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 1120px;
-      display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
-      gap: 20px;
+    .wrap{
+      max-width: 1220px;
+      margin: 0 auto;
+      display:grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
+      gap: 18px;
+      align-items:start;
+    }
+    @media (max-width: 1050px){
+      .wrap{ grid-template-columns: 1fr; }
     }
 
-    @media (max-width: 900px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 45%), var(--card);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow-soft);
-      padding: 20px 22px;
-      position: relative;
-      overflow: hidden;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
     }
-
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: -120px;
-      background: radial-gradient(circle at top left, rgba(108, 92, 231, 0.13), transparent 55%);
-      opacity: 0.9;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .card-inner {
-      position: relative;
-      z-index: 1;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
+    .inner{ padding: 18px 18px 16px; }
+    .header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
       gap: 12px;
-      flex-wrap: wrap;
+      flex-wrap:wrap;
+      padding: 18px 18px 8px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 260px;
+    }
+    .logo{
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 30% 20%, rgba(162,155,255,.35), rgba(108,92,231,.25) 40%, rgba(0,0,0,.2) 78%),
+                  rgba(108,92,231,.10);
+      border: 1px solid rgba(255,255,255,.12);
+      display:flex; align-items:center; justify-content:center;
+      font-weight: 800;
+      letter-spacing: .02em;
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+    }
+    .title h1{
+      font-size: 18px;
+      font-weight: 760;
+      letter-spacing: .02em;
+      margin-bottom: 2px;
+    }
+    .title p{
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.35;
+      max-width: 560px;
     }
 
-    .title {
-      font-size: 22px;
-      font-weight: 650;
-      letter-spacing: 0.02em;
+    .controls{
+      display:flex;
+      gap: 8px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
     }
-
-    .subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 6px;
-      max-width: 480px;
-      line-height: 1.4;
-    }
-
-    .pill {
+    .btn{
+      appearance:none;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 10px;
       font-size: 12px;
-      padding: 6px 11px;
-      border-radius: var(--radius-pill);
-      border: 1px solid rgba(255,255,255,0.09);
-      background: linear-gradient(to right, rgba(108, 92, 231, 0.24), rgba(0,0,0,0.2));
-      color: #fefefe;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
+      cursor:pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.06); border-color: var(--border); }
+    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn.primary{
+      background: linear-gradient(90deg, rgba(108,92,231,.25), rgba(162,155,255,.18));
+      border-color: rgba(162,155,255,.35);
+    }
+    .chip{
+      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      display:inline-flex; gap: 6px; align-items:center;
+      background: rgba(0,0,0,.12);
+    }
+    .dot{
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--good);
+      box-shadow: 0 0 12px rgba(85,239,196,.55);
+    }
+    .dot.off{ background: var(--warn); box-shadow: 0 0 12px rgba(255,234,167,.45); }
+
+    .grid2{
+      display:grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, .95fr);
+      gap: 14px;
+    }
+    @media (max-width: 850px){
+      .grid2{ grid-template-columns: 1fr; }
     }
 
-    .pill-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #2ecc71;
-      box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+    .panel{
+      border: 1px solid var(--border2);
+      background: rgba(0,0,0,.12);
+      border-radius: var(--radius2);
+      padding: 14px;
+    }
+    [data-theme="light"] .panel{
+      background: rgba(10,10,18,.03);
     }
 
-    .main-key-box {
-      margin-top: 16px;
-      margin-bottom: 18px;
+    .kbox{
       border-radius: 16px;
-      border: 1px solid rgba(255,255,255,0.04);
-      background: radial-gradient(circle at top left, rgba(255,255,255,0.04), rgba(2,2,4,0.9));
-      padding: 16px 18px 18px;
+      border: 1px solid var(--border2);
+      background: radial-gradient(circle at 25% 10%, rgba(255,255,255,.06), transparent 55%), rgba(0,0,0,.18);
+      padding: 14px;
+      overflow:hidden;
+    }
+    [data-theme="light"] .kbox{
+      background: radial-gradient(circle at 25% 10%, rgba(10,10,18,.03), transparent 55%), rgba(10,10,18,.02);
     }
 
-    .main-key-label {
-      font-size: 12px;
+    .bigkey{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .bigkey .left{ display:flex; flex-direction:column; gap: 6px; }
+    .label{
+      font-size: 11px;
+      letter-spacing: .16em;
       text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
+      color: var(--muted);
     }
-
-    .main-key {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 120px;
-      padding: 18px 22px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(0,0,0,0.45);
-      font-size: 32px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+    .keycap{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 150px;
+      min-height: 64px;
+      padding: 10px 16px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.75);
+    }
+    [data-theme="light"] .keycap{ background: rgba(10,10,18,.04); box-shadow: 0 18px 40px rgba(20,20,40,.10); }
+    .keycap.empty{
+      font-size: 16px;
+      font-weight: 650;
+      letter-spacing: .02em;
+      text-transform:none;
+      color: var(--muted);
     }
 
-    .main-key.empty {
-      color: var(--text-muted);
-      letter-spacing: 0.03em;
-      text-transform: none;
-    }
-
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 10px;
     }
-
-    @media (max-width: 600px) {
-      .meta-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .meta-item {
+    @media (max-width: 520px){ .meta{ grid-template-columns: 1fr; } }
+    .metaRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
       font-size: 13px;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
+      color: var(--muted);
     }
-
-    .meta-item span:first-child {
-      opacity: 0.9;
-    }
-
-    code.badge {
-      background: #111319;
-      border-radius: 10px;
-      padding: 4px 8px;
+    .badge{
+      font-family: var(--mono);
       font-size: 12px;
-      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #fefefe;
-      max-width: 100%;
-      overflow: hidden;
+      padding: 4px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      max-width: 62%;
+      overflow:hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .mods-line {
+    .mods{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 6px;
       margin-top: 12px;
+      align-items:center;
+      color: var(--muted);
       font-size: 13px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
     }
-
-    .kbd {
-      background: #181b26;
-      border-radius: 6px;
-      padding: 4px 8px;
-      border: 1px solid rgba(255,255,255,0.12);
+    .miniKey{
+      font-family: var(--mono);
       font-size: 12px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      padding: 5px 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.03);
+      color: var(--kbdMuted);
+      transition: all .12s ease;
+    }
+    .miniKey.on{
+      border-color: var(--kbdPressedBorder);
+      background: var(--kbdPressed);
+      color: var(--text);
+      box-shadow: 0 0 0 1px rgba(162,155,255,.35);
     }
 
-    .kbd.active {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: #ffffff;
-      box-shadow: 0 0 0 1px rgba(108, 92, 231, 0.75);
+    .sectionTitle{
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
     }
 
-    .hint {
-      margin-top: 14px;
-      font-size: 13px;
-      color: var(--text-muted);
+    /* Virtual keyboard */
+    .kbWrap{
+      border-radius: 16px;
+      border: 1px solid var(--border2);
+      background: rgba(0,0,0,.16);
+      padding: 12px;
+      overflow:auto;
+    }
+    [data-theme="light"] .kbWrap{ background: rgba(10,10,18,.02); }
+
+    .row{ display:grid; gap: 8px; margin-bottom: 8px; }
+    .row:last-child{ margin-bottom: 0; }
+
+    .key{
+      position:relative;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent 50%), var(--kbd);
+      border: 1px solid rgba(255,255,255,.08);
+      color: var(--kbdText);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 12px;
+      font-family: var(--mono);
+      user-select:none;
+      transition: transform .08s ease, background .12s ease, border-color .12s ease;
+      min-width: 44px;
+    }
+    [data-theme="light"] .key{
+      background: linear-gradient(180deg, rgba(10,10,18,.03), transparent 50%), var(--kbd);
+      border-color: rgba(10,10,18,.12);
+    }
+    .key .sub{
+      position:absolute;
+      right: 8px;
+      bottom: 6px;
+      font-size: 10px;
+      color: var(--kbdMuted);
+      opacity: .85;
+    }
+    .key.pressed{
+      background: linear-gradient(180deg, rgba(162,155,255,.22), rgba(108,92,231,.14)), var(--kbd2);
+      border-color: var(--kbdPressedBorder);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(108,92,231,.22);
     }
 
-    .hint b {
-      color: #ffffff;
-      font-weight: 600;
-    }
+    .row.r1{ grid-template-columns: repeat(14, 1fr); min-width: 860px; }
+    .row.r2{ grid-template-columns: 1.2fr repeat(12, 1fr) 1.8fr; min-width: 860px; }
+    .row.r3{ grid-template-columns: 1.6fr repeat(12, 1fr) 2.2fr; min-width: 860px; }
+    .row.r4{ grid-template-columns: 2.1fr repeat(11, 1fr) 2.7fr; min-width: 860px; }
+    .row.r5{ grid-template-columns: 2.7fr repeat(10, 1fr) 3.2fr; min-width: 860px; }
+    .row.r6{ grid-template-columns: 1.6fr 1.6fr 1.6fr 6.6fr 1.6fr 1.6fr 1.6fr; min-width: 860px; }
 
-    .pressed-section, .log-section {
-      margin-top: 16px;
-      background: rgba(3, 4, 10, 0.92);
+    /* Log */
+    .log{
+      max-height: 240px;
+      overflow:auto;
+      border: 1px dashed var(--border2);
       border-radius: 14px;
-      border: 1px dashed rgba(255,255,255,0.07);
-      padding: 12px 14px;
+      padding: 10px;
+      background: rgba(0,0,0,.14);
     }
+    [data-theme="light"] .log{ background: rgba(10,10,18,.02); }
 
-    .section-title {
+    .logRow{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    [data-theme="light"] .logRow{ border-bottom: 1px solid rgba(10,10,18,.06); }
+    .logRow:last-child{ border-bottom:none; }
+    .logLeft{ display:flex; gap: 8px; flex-wrap:wrap; align-items:center; }
+    .pillKey{
+      font-family: var(--mono);
       font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
-
-    .pressed-keys {
-      min-height: 24px;
-      font-size: 13px;
-      color: var(--text-main);
-    }
-
-    .pressed-keys.empty {
-      color: var(--text-muted);
-    }
-
-    .log-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-    }
-
-    .log-list {
-      max-height: 220px;
-      overflow-y: auto;
-      font-size: 13px;
-      line-height: 1.35;
-      padding-right: 4px;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.3) transparent;
-    }
-
-    .log-list::-webkit-scrollbar {
-      width: 6px;
-    }
-    .log-list::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .log-list::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.3);
+      padding: 4px 8px;
       border-radius: 999px;
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.03);
     }
-
-    .log-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 4px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-    }
-
-    .log-left {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .log-key {
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-
-    .log-meta {
+    .logMeta{
       font-size: 11px;
-      color: var(--text-muted);
+      color: var(--muted);
+      white-space:nowrap;
     }
-
-    .log-empty {
+    .empty{
       font-size: 13px;
-      color: var(--text-muted);
-      padding: 4px 0;
+      color: var(--muted);
+      padding: 6px 2px;
     }
 
-    .btn {
-      appearance: none;
-      border: none;
-      outline: none;
-      border-radius: 999px;
-      padding: 5px 10px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      cursor: pointer;
-      background: rgba(255,255,255,0.03);
-      color: var(--text-muted);
-      border: 1px solid rgba(255,255,255,0.09);
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .btn:hover {
-      background: rgba(255,255,255,0.08);
-      color: #ffffff;
-    }
-
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .card-small {
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.72);
-      padding: 16px 18px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .card-small::before {
-      content: "";
-      position: absolute;
-      inset: -120px;
-      background: radial-gradient(circle at top right, rgba(108, 92, 231, 0.19), transparent 55%);
-      opacity: 0.9;
-      pointer-events: none;
-    }
-
-    .card-small-inner {
-      position: relative;
-      z-index: 1;
-    }
-
-    .small-title {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .small-text {
+    .note{
       font-size: 13px;
-      color: var(--text-muted);
-      line-height: 1.5;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .note b{ color: var(--text); }
+
+    .statGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 520px){ .statGrid{ grid-template-columns: 1fr; } }
+    .stat{
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.03);
+    }
+    .stat .n{
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+    .stat .t{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
     }
 
-    .small-list {
-      margin-top: 8px;
-      font-size: 13px;
-      color: var(--text-muted);
-    }
-
-    .small-list li {
-      margin-left: 18px;
-      margin-bottom: 4px;
-    }
-
-    .footer-note {
-      font-size: 11px;
-      color: var(--text-muted);
+    .footer{
       margin-top: 10px;
+      font-size: 11.5px;
+      color: var(--muted);
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
     }
+    .footer a{ color: var(--accent2); text-decoration:none; }
+    .footer a:hover{ text-decoration:underline; }
 
-    a {
-      color: #a29bff;
-      text-decoration: none;
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.72);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      display:none;
+      gap: 8px;
+      align-items:center;
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      z-index: 99;
     }
+    [data-theme="light"] .toast{ background: rgba(10,10,18,.78); }
 
-    a:hover {
-      text-decoration: underline;
-    }
+    .toast.show{ display:inline-flex; animation: pop .18s ease; }
+    @keyframes pop{ from{ transform: translateX(-50%) translateY(8px); opacity:0 } to{ transform: translateX(-50%) translateY(0); opacity:1 } }
+
+    .sr{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
   </style>
 </head>
+
 <body>
-  <main class="container" tabindex="-1" id="pageRoot">
-    <!-- Основная карточка -->
-    <section class="card" id="focusZone">
-      <div class="card-inner">
-        <header class="card-header">
-          <div>
-            <h1 class="title">Тест клавиатуры</h1>
-            <p class="subtitle">
-              Нажимай любые клавиши — здесь видно, что реально получает браузер.
-              Удобно для проверки: работает ли каждая кнопка, не залипают ли клавиши
-              и как называются коды для настройки игр или софта.
+  <div class="wrap" id="app">
+    <!-- MAIN -->
+    <section class="card" id="mainCard" tabindex="0" aria-label="Keyboard tester">
+      <div class="header">
+        <div class="brand">
+          <div class="logo">K</div>
+          <div class="title">
+            <h1 id="uiTitle">Тестер клавиатуры</h1>
+            <p id="uiSub">
+              Подсветка клавиш, история нажатий и тест одновременных нажатий (rollover/ghosting).
+              Никаких данных на сервер — всё работает локально в браузере.
             </p>
           </div>
-          <div class="pill">
-            <span class="pill-dot"></span>
-            <span>Live check</span>
-          </div>
-        </header>
-
-        <div class="main-key-box">
-          <div class="main-key-label">Текущая клавиша</div>
-          <div class="main-key empty" id="mainKey">Нажми любую клавишу</div>
-
-          <div class="meta-grid">
-            <div class="meta-item">
-              <span>event.key</span>
-              <code class="badge" id="metaKey">—</code>
-            </div>
-            <div class="meta-item">
-              <span>event.code</span>
-              <code class="badge" id="metaCode">—</code>
-            </div>
-            <div class="meta-item">
-              <span>keyCode</span>
-              <code class="badge" id="metaKeyCode">—</code>
-            </div>
-            <div class="meta-item">
-              <span>Расположение</span>
-              <code class="badge" id="metaLocation">—</code>
-            </div>
-          </div>
-
-          <div class="mods-line">
-            <span>Модификаторы:</span>
-            <span class="kbd" id="modCtrl">Ctrl</span>
-            <span class="kbd" id="modAlt">Alt</span>
-            <span class="kbd" id="modShift">Shift</span>
-            <span class="kbd" id="modMeta">Win / ⌘</span>
-          </div>
-
-          <p class="hint">
-            <b>Подсказка:</b> кликни в любое место страницы (или по этой карточке) и просто
-            начинай нажимать кнопки. Для проверки сочетаний зажимай сразу несколько клавиш.
-          </p>
         </div>
 
-        <section class="pressed-section">
-          <div class="section-title">Сейчас зажаты</div>
-          <div class="pressed-keys empty" id="pressedKeys">Ничего не нажато.</div>
-        </section>
+        <div class="controls">
+          <span class="chip" title="Статус">
+            <span class="dot" id="dot"></span>
+            <span id="uiLive">Live</span>
+          </span>
 
-        <section class="log-section">
-          <div class="log-header">
-            <div class="section-title">История нажатий (последние 25)</div>
-            <button class="btn" id="clearLogBtn">Очистить</button>
+          <button class="btn primary" id="btnCapture" title="Capture Mode — ловить клавиши внутри теста">
+            <span id="uiCapture">Capture: ON</span>
+          </button>
+
+          <button class="btn" id="btnLang" title="Language / Язык">RU</button>
+          <button class="btn" id="btnTheme" title="Theme">🌙</button>
+          <button class="btn" id="btnShare" title="Copy site link">🔗 <span id="uiShare">Ссылка</span></button>
+        </div>
+      </div>
+
+      <div class="inner">
+        <div class="grid2">
+          <!-- LEFT: Live -->
+          <div class="kbox">
+            <div class="bigkey">
+              <div class="left">
+                <div class="label" id="uiCurrentKeyLabel">Текущая клавиша</div>
+                <div class="keycap empty" id="bigKey">Нажми любую клавишу</div>
+              </div>
+
+              <div class="panel" style="min-width:260px; max-width:360px;">
+                <div class="sectionTitle">
+                  <span id="uiQuickHelpTitle">Быстро</span>
+                </div>
+                <p class="note" id="uiQuickHelp">
+                  Кликни по карточке и нажимай клавиши. Для сочетаний зажимай несколько кнопок.
+                  Если мешают браузерные хоткеи — включи/выключи <b>Capture Mode</b>.
+                </p>
+              </div>
+            </div>
+
+            <div class="meta" aria-label="Keyboard event fields">
+              <div class="metaRow"><span>event.key</span><span class="badge" id="mKey">—</span></div>
+              <div class="metaRow"><span>event.code</span><span class="badge" id="mCode">—</span></div>
+              <div class="metaRow"><span>keyCode</span><span class="badge" id="mKeyCode">—</span></div>
+              <div class="metaRow"><span id="uiLocation">Расположение</span><span class="badge" id="mLoc">—</span></div>
+            </div>
+
+            <div class="mods">
+              <span id="uiMods">Модификаторы:</span>
+              <span class="miniKey" id="modCtrl">Ctrl</span>
+              <span class="miniKey" id="modAlt">Alt</span>
+              <span class="miniKey" id="modShift">Shift</span>
+              <span class="miniKey" id="modMeta">Win / ⌘</span>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="panel">
+              <div class="sectionTitle">
+                <span id="uiPressedNow">Сейчас зажаты</span>
+                <button class="btn" id="btnClearPressed" title="Clear pressed (if window lost focus)">
+                  <span id="uiReset">Сброс</span>
+                </button>
+              </div>
+              <div class="note" id="pressedNow">—</div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="panel">
+              <div class="sectionTitle">
+                <span id="uiRollover">Rollover / Ghosting тест</span>
+              </div>
+              <div class="statGrid">
+                <div class="stat">
+                  <div class="n" id="simulNow">0</div>
+                  <div class="t" id="uiSimulNow">Сейчас одновременно</div>
+                </div>
+                <div class="stat">
+                  <div class="n" id="simulMax">0</div>
+                  <div class="t" id="uiSimulMax">Максимум за сессию</div>
+                </div>
+              </div>
+              <div style="height:10px"></div>
+              <p class="note" id="uiRolloverHint">
+                Зажми много букв одновременно (например, <b>ASDFJKL;</b>) и смотри счётчик.
+                Если некоторые клавиши «пропадают» — это ограничение клавиатуры (ghosting).
+              </p>
+            </div>
           </div>
-          <div class="log-list" id="logList">
-            <div class="log-empty">Сделай пару нажатий — они появятся здесь.</div>
+
+          <!-- RIGHT: Virtual keyboard + Log -->
+          <div class="kbox">
+            <div class="sectionTitle">
+              <span id="uiVisualKeyboard">Виртуальная клавиатура</span>
+              <span class="chip" title="Tip"><span class="dot off" id="focusDot"></span><span id="uiFocus">Нужен фокус</span></span>
+            </div>
+
+            <div class="kbWrap" id="kb" aria-label="Virtual keyboard (ANSI US layout)">
+              <div class="row r1">
+                <div class="key" data-code="Escape">Esc<div class="sub">Esc</div></div>
+                <div class="key" data-code="F1">F1</div>
+                <div class="key" data-code="F2">F2</div>
+                <div class="key" data-code="F3">F3</div>
+                <div class="key" data-code="F4">F4</div>
+                <div class="key" data-code="F5">F5</div>
+                <div class="key" data-code="F6">F6</div>
+                <div class="key" data-code="F7">F7</div>
+                <div class="key" data-code="F8">F8</div>
+                <div class="key" data-code="F9">F9</div>
+                <div class="key" data-code="F10">F10</div>
+                <div class="key" data-code="F11">F11</div>
+                <div class="key" data-code="F12">F12</div>
+                <div class="key" data-code="PrintScreen">PrtSc</div>
+              </div>
+
+              <div class="row r2">
+                <div class="key" data-code="Backquote">`<div class="sub">~</div></div>
+                <div class="key" data-code="Digit1">1<div class="sub">!</div></div>
+                <div class="key" data-code="Digit2">2<div class="sub">@</div></div>
+                <div class="key" data-code="Digit3">3<div class="sub">#</div></div>
+                <div class="key" data-code="Digit4">4<div class="sub">$</div></div>
+                <div class="key" data-code="Digit5">5<div class="sub">%</div></div>
+                <div class="key" data-code="Digit6">6<div class="sub">^</div></div>
+                <div class="key" data-code="Digit7">7<div class="sub">&</div></div>
+                <div class="key" data-code="Digit8">8<div class="sub">*</div></div>
+                <div class="key" data-code="Digit9">9<div class="sub">(</div></div>
+                <div class="key" data-code="Digit0">0<div class="sub">)</div></div>
+                <div class="key" data-code="Minus">-<div class="sub">_</div></div>
+                <div class="key" data-code="Equal">=<div class="sub">+</div></div>
+                <div class="key" data-code="Backspace">Backspace</div>
+              </div>
+
+              <div class="row r3">
+                <div class="key" data-code="Tab">Tab</div>
+                <div class="key" data-code="KeyQ">Q</div>
+                <div class="key" data-code="KeyW">W</div>
+                <div class="key" data-code="KeyE">E</div>
+                <div class="key" data-code="KeyR">R</div>
+                <div class="key" data-code="KeyT">T</div>
+                <div class="key" data-code="KeyY">Y</div>
+                <div class="key" data-code="KeyU">U</div>
+                <div class="key" data-code="KeyI">I</div>
+                <div class="key" data-code="KeyO">O</div>
+                <div class="key" data-code="KeyP">P</div>
+                <div class="key" data-code="BracketLeft">[<div class="sub">{</div></div>
+                <div class="key" data-code="BracketRight">]<div class="sub">}</div></div>
+                <div class="key" data-code="Backslash">\ <div class="sub">|</div></div>
+              </div>
+
+              <div class="row r4">
+                <div class="key" data-code="CapsLock">Caps</div>
+                <div class="key" data-code="KeyA">A</div>
+                <div class="key" data-code="KeyS">S</div>
+                <div class="key" data-code="KeyD">D</div>
+                <div class="key" data-code="KeyF">F</div>
+                <div class="key" data-code="KeyG">G</div>
+                <div class="key" data-code="KeyH">H</div>
+                <div class="key" data-code="KeyJ">J</div>
+                <div class="key" data-code="KeyK">K</div>
+                <div class="key" data-code="KeyL">L</div>
+                <div class="key" data-code="Semicolon">;<div class="sub">:</div></div>
+                <div class="key" data-code="Quote">'<div class="sub">"</div></div>
+                <div class="key" data-code="Enter">Enter</div>
+              </div>
+
+              <div class="row r5">
+                <div class="key" data-code="ShiftLeft">Shift</div>
+                <div class="key" data-code="KeyZ">Z</div>
+                <div class="key" data-code="KeyX">X</div>
+                <div class="key" data-code="KeyC">C</div>
+                <div class="key" data-code="KeyV">V</div>
+                <div class="key" data-code="KeyB">B</div>
+                <div class="key" data-code="KeyN">N</div>
+                <div class="key" data-code="KeyM">M</div>
+                <div class="key" data-code="Comma">,<div class="sub">&lt;</div></div>
+                <div class="key" data-code="Period">.<div class="sub">&gt;</div></div>
+                <div class="key" data-code="Slash">/<div class="sub">?</div></div>
+                <div class="key" data-code="ShiftRight">Shift</div>
+              </div>
+
+              <div class="row r6">
+                <div class="key" data-code="ControlLeft">Ctrl</div>
+                <div class="key" data-code="MetaLeft">Win</div>
+                <div class="key" data-code="AltLeft">Alt</div>
+                <div class="key" data-code="Space">Space</div>
+                <div class="key" data-code="AltRight">Alt</div>
+                <div class="key" data-code="MetaRight">Win</div>
+                <div class="key" data-code="ControlRight">Ctrl</div>
+              </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <div class="panel">
+              <div class="sectionTitle">
+                <span id="uiHistory">История нажатий</span>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <button class="btn" id="btnCopy"><span id="uiCopy">Копировать</span></button>
+                  <button class="btn" id="btnCSV"><span id="uiExport">Экспорт CSV</span></button>
+                  <button class="btn" id="btnClear"><span id="uiClear">Очистить</span></button>
+                </div>
+              </div>
+
+              <div class="log" id="log">
+                <div class="empty" id="logEmpty">Сделай пару нажатий — они появятся здесь.</div>
+              </div>
+
+              <div class="footer">
+                <span id="uiPrivacy">Конфиденциальность: данные не отправляются на сервер.</span>
+                <span><a href="#" id="focusLink">Focus</a> · <a href="#" id="topLink">Top</a></span>
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
+
       </div>
     </section>
 
-    <!-- Правая колонка: объяснения -->
-    <aside class="sidebar" aria-label="Пояснения и инструкции">
-      <section class="card-small">
-        <div class="card-small-inner">
-          <h2 class="small-title">Как пользоваться</h2>
-          <p class="small-text">
-            Этот тест показывает <b>реальные данные</b> от браузера:
-            символ нажатой клавиши, её код, старый keyCode и модификаторы.
-          </p>
-          <ul class="small-list">
-            <li><b>Проверь каждую кнопку.</b> Просто проходись по всей клавиатуре.</li>
-            <li><b>Проверь комбинации.</b> Зажимай Ctrl / Shift / Alt и смотри, всё ли срабатывает.</li>
-            <li><b>Смотри на «Сейчас зажаты».</b> Там видно, не залипает ли какая-то клавиша.</li>
-          </ul>
-        </div>
-      </section>
+    <!-- SIDE -->
+    <aside class="card">
+      <div class="inner">
+        <div class="sectionTitle"><span id="uiGuideTitle">Как это использовать</span></div>
+        <p class="note" id="uiGuideText">
+          <b>Для обычной проверки</b>: просто нажимай клавиши и смотри подсветку справа.<br/>
+          <b>Для сочетаний</b>: зажимай несколько кнопок — список “Сейчас зажаты” покажет, что реально удерживается.<br/>
+          <b>Для ghosting теста</b>: удерживай 6–10 клавиш в одном блоке (буквы/ряд цифр) и смотри максимальное значение.
+        </p>
 
-      <section class="card-small">
-        <div class="card-small-inner">
-          <h2 class="small-title">Что означают поля</h2>
-          <ul class="small-list">
-            <li><b>event.key</b> — символ или название (например, <code>Enter</code>, <code>a</code>).</li>
-            <li><b>event.code</b> — «физическое» место на клавиатуре (полезно для игр).</li>
-            <li><b>keyCode</b> — старый формат, ещё используют в старых программах.</li>
-            <li><b>Расположение</b> — левая/правая клавиша или numpad.</li>
-          </ul>
-          <p class="footer-note">
-            Сайт работает прямо в браузере. Ничего не отправляется на сервер.
-          </p>
-        </div>
-      </section>
+        <div style="height:14px"></div>
+
+        <div class="sectionTitle"><span id="uiFieldsTitle">Что значат поля</span></div>
+        <ul class="note" style="line-height:1.55; padding-left: 18px;" id="uiFieldsList">
+          <li><b>event.key</b> — “символ/название” (Enter, a, ü…)</li>
+          <li><b>event.code</b> — “физическое место” (важно для игр)</li>
+          <li><b>keyCode</b> — старое поле для старых приложений</li>
+          <li><b>Расположение</b> — левая/правая/numPad</li>
+        </ul>
+
+        <div style="height:14px"></div>
+
+        <div class="sectionTitle"><span id="uiProTitle">Фишки продукта</span></div>
+        <ul class="note" style="line-height:1.55; padding-left: 18px;" id="uiProList">
+          <li>Подсветка клавиш + лог событий</li>
+          <li>Rollover/ghosting тест</li>
+          <li>Экспорт истории в CSV</li>
+          <li>RU/EN, Light/Dark, Capture mode</li>
+        </ul>
+
+        <div style="height:14px"></div>
+
+        <div class="sectionTitle"><span id="uiTipTitle">Лайфхак</span></div>
+        <p class="note" id="uiTipText">
+          Если клавиши “залипли” после переключения окна — нажми <b>Сброс</b> или кликни на страницу, затем отпусти всё.
+        </p>
+      </div>
     </aside>
-  </main>
+  </div>
 
-  <script>
-    const mainKeyEl = document.getElementById("mainKey");
-    const metaKeyEl = document.getElementById("metaKey");
-    const metaCodeEl = document.getElementById("metaCode");
-    const metaKeyCodeEl = document.getElementById("metaKeyCode");
-    const metaLocationEl = document.getElementById("metaLocation");
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span>✅</span><span id="toastText">Готово</span>
+  </div>
 
-    const modCtrlEl = document.getElementById("modCtrl");
-    const modAltEl = document.getElementById("modAlt");
-    const modShiftEl = document.getElementById("modShift");
-    const modMetaEl = document.getElementById("modMeta");
+  <div class="sr" id="srStatus" aria-live="polite"></div>
 
-    const pressedKeysEl = document.getElementById("pressedKeys");
-    const logListEl = document.getElementById("logList");
-    const clearLogBtn = document.getElementById("clearLogBtn");
-    const focusZone = document.getElementById("focusZone");
-    const pageRoot = document.getElementById("pageRoot");
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
 
-    const pressedSet = new Set();
-    const logData = [];
-    const LOG_LIMIT = 25;
+  const app = $("app");
+  const mainCard = $("mainCard");
 
-    function describeLocation(loc) {
-      switch (loc) {
-        case 1: return "Левая клавиша (например, Left Shift)";
-        case 2: return "Правая клавиша (например, Right Shift)";
-        case 3: return "Numpad";
-        default: return "Обычное расположение";
-      }
+  const bigKey = $("bigKey");
+  const mKey = $("mKey");
+  const mCode = $("mCode");
+  const mKeyCode = $("mKeyCode");
+  const mLoc = $("mLoc");
+
+  const modCtrl = $("modCtrl");
+  const modAlt = $("modAlt");
+  const modShift = $("modShift");
+  const modMeta = $("modMeta");
+
+  const pressedNow = $("pressedNow");
+  const btnClearPressed = $("btnClearPressed");
+
+  const simulNow = $("simulNow");
+  const simulMax = $("simulMax");
+
+  const log = $("log");
+  const logEmpty = $("logEmpty");
+
+  const btnClear = $("btnClear");
+  const btnCopy = $("btnCopy");
+  const btnCSV = $("btnCSV");
+  const btnShare = $("btnShare");
+  const btnTheme = $("btnTheme");
+  const btnLang = $("btnLang");
+  const btnCapture = $("btnCapture");
+
+  const dot = $("dot");
+  const focusDot = $("focusDot");
+
+  const toast = $("toast");
+  const toastText = $("toastText");
+  const srStatus = $("srStatus");
+
+  const focusLink = $("focusLink");
+  const topLink = $("topLink");
+
+  const keys = Array.from(document.querySelectorAll("[data-code]"));
+  const keyByCode = new Map(keys.map(k => [k.dataset.code, k]));
+
+  // State
+  let captureMode = true;
+  let lang = localStorage.getItem("kb_lang") || "ru";
+  let theme = localStorage.getItem("kb_theme") || "dark";
+  const pressed = new Set(); // store codes
+  const logData = [];
+  const LOG_LIMIT = 40;
+  let maxSimul = 0;
+
+  const i18n = {
+    ru: {
+      title: "Тестер клавиатуры",
+      sub: "Подсветка клавиш, история нажатий и тест одновременных нажатий (rollover/ghosting). Никаких данных на сервер — всё работает локально в браузере.",
+      live: "Live",
+      captureOn: "Capture: ON",
+      captureOff: "Capture: OFF",
+      share: "Ссылка",
+      currentKey: "Текущая клавиша",
+      quick: "Быстро",
+      quickHelp: "Кликни по карточке и нажимай клавиши. Для сочетаний зажимай несколько кнопок. Если мешают браузерные хоткеи — включи/выключи Capture Mode.",
+      location: "Расположение",
+      mods: "Модификаторы:",
+      pressedNow: "Сейчас зажаты",
+      reset: "Сброс",
+      rollover: "Rollover / Ghosting тест",
+      simulNow: "Сейчас одновременно",
+      simulMax: "Максимум за сессию",
+      rolloverHint: "Зажми много букв одновременно (например, ASDFJKL;) и смотри счётчик. Если некоторые клавиши «пропадают» — это ограничение клавиатуры (ghosting).",
+      visual: "Виртуальная клавиатура",
+      needFocus: "Нужен фокус",
+      history: "История нажатий",
+      copy: "Копировать",
+      export: "Экспорт CSV",
+      clear: "Очистить",
+      empty: "Сделай пару нажатий — они появятся здесь.",
+      privacy: "Конфиденциальность: данные не отправляются на сервер.",
+      guideTitle: "Как это использовать",
+      guideText: "<b>Для обычной проверки</b>: просто нажимай клавиши и смотри подсветку справа.<br/><b>Для сочетаний</b>: зажимай несколько кнопок — список “Сейчас зажаты” покажет, что реально удерживается.<br/><b>Для ghosting теста</b>: удерживай 6–10 клавиш в одном блоке (буквы/ряд цифр) и смотри максимальное значение.",
+      fieldsTitle: "Что значат поля",
+      proTitle: "Фишки продукта",
+      tipTitle: "Лайфхак",
+      tipText: "Если клавиши “залипли” после переключения окна — нажми <b>Сброс</b> или кликни на страницу, затем отпусти всё.",
+      toastCopied: "Скопировано ✅",
+      toastLink: "Ссылка скопирована ✅",
+      toastCSV: "CSV скачан ✅",
+      toastCleared: "Очищено ✅",
+      toastReset: "Сброшено ✅"
+    },
+    en: {
+      title: "Keyboard Tester",
+      sub: "Key highlighting, event history and rollover/ghosting test. No data is sent anywhere — everything runs locally in your browser.",
+      live: "Live",
+      captureOn: "Capture: ON",
+      captureOff: "Capture: OFF",
+      share: "Link",
+      currentKey: "Current key",
+      quick: "Quick help",
+      quickHelp: "Click the card and press any keys. Hold multiple keys for combos. If browser shortcuts interfere — toggle Capture Mode.",
+      location: "Location",
+      mods: "Modifiers:",
+      pressedNow: "Pressed now",
+      reset: "Reset",
+      rollover: "Rollover / Ghosting test",
+      simulNow: "Simultaneous now",
+      simulMax: "Session max",
+      rolloverHint: "Hold many keys (e.g., ASDFJKL;) and watch the counter. If some keys disappear — that’s keyboard ghosting / rollover limits.",
+      visual: "Visual keyboard",
+      needFocus: "Need focus",
+      history: "History",
+      copy: "Copy",
+      export: "Export CSV",
+      clear: "Clear",
+      empty: "Press a few keys — they will appear here.",
+      privacy: "Privacy: nothing is sent to a server.",
+      guideTitle: "How to use",
+      guideText: "<b>Basic check</b>: press keys and watch highlights.<br/><b>Combos</b>: hold multiple keys — “Pressed now” shows what is truly held.<br/><b>Ghosting</b>: hold 6–10 keys in the same area and watch max.",
+      fieldsTitle: "Field meanings",
+      proTitle: "Product features",
+      tipTitle: "Tip",
+      tipText: "If keys look stuck after switching tabs — press <b>Reset</b> or click the page and release everything.",
+      toastCopied: "Copied ✅",
+      toastLink: "Link copied ✅",
+      toastCSV: "CSV downloaded ✅",
+      toastCleared: "Cleared ✅",
+      toastReset: "Reset ✅"
     }
+  };
 
-    function updateMain(e) {
-      const key = e.key === " " ? "Space" : e.key;
+  function setText(id, text){ const el = $(id); if(el) el.textContent = text; }
+  function setHTML(id, html){ const el = $(id); if(el) el.innerHTML = html; }
 
-      mainKeyEl.textContent = key;
-      mainKeyEl.classList.remove("empty");
+  function applyLang(){
+    const t = i18n[lang];
+    setText("uiTitle", t.title);
+    setText("uiSub", t.sub);
+    setText("uiLive", t.live);
+    setText("uiCurrentKeyLabel", t.currentKey);
+    setText("uiQuickHelpTitle", t.quick);
+    setHTML("uiQuickHelp", t.quickHelp);
+    setText("uiLocation", t.location);
+    setText("uiMods", t.mods);
+    setText("uiPressedNow", t.pressedNow);
+    setText("uiReset", t.reset);
+    setText("uiRollover", t.rollover);
+    setText("uiSimulNow", t.simulNow);
+    setText("uiSimulMax", t.simulMax);
+    setHTML("uiRolloverHint", t.rolloverHint);
+    setText("uiVisualKeyboard", t.visual);
+    setText("uiFocus", t.needFocus);
+    setText("uiHistory", t.history);
+    setText("uiCopy", t.copy);
+    setText("uiExport", t.export);
+    setText("uiClear", t.clear);
+    setText("logEmpty", t.empty);
+    setText("uiPrivacy", t.privacy);
+    setText("uiGuideTitle", t.guideTitle);
+    setHTML("uiGuideText", t.guideText);
+    setText("uiFieldsTitle", t.fieldsTitle);
+    setText("uiProTitle", t.proTitle);
+    setText("uiTipTitle", t.tipTitle);
+    setHTML("uiTipText", t.tipText);
+    $("btnLang").textContent = lang.toUpperCase();
+    updateCaptureBtn();
+  }
 
-      metaKeyEl.textContent = String(e.key);
-      metaCodeEl.textContent = String(e.code);
-      metaKeyCodeEl.textContent = String(e.keyCode);
-      metaLocationEl.textContent = describeLocation(e.location);
+  function applyTheme(){
+    document.documentElement.setAttribute("data-theme", theme);
+    btnTheme.textContent = theme === "dark" ? "🌙" : "☀️";
+    localStorage.setItem("kb_theme", theme);
+  }
 
-      modCtrlEl.classList.toggle("active", e.ctrlKey);
-      modAltEl.classList.toggle("active", e.altKey);
-      modShiftEl.classList.toggle("active", e.shiftKey);
-      modMetaEl.classList.toggle("active", e.metaKey);
+  function toastShow(text){
+    toastText.textContent = text;
+    toast.classList.add("show");
+    srStatus.textContent = text;
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>toast.classList.remove("show"), 1400);
+  }
+
+  function updateCaptureBtn(){
+    const t = i18n[lang];
+    setText("uiCapture", captureMode ? t.captureOn : t.captureOff);
+    dot.classList.toggle("off", !captureMode);
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function locText(loc){
+    if(lang === "en"){
+      if(loc === 1) return "Left";
+      if(loc === 2) return "Right";
+      if(loc === 3) return "Numpad";
+      return "Standard";
+    } else {
+      if(loc === 1) return "Левая";
+      if(loc === 2) return "Правая";
+      if(loc === 3) return "Numpad";
+      return "Обычное";
     }
+  }
 
-    function updatePressed() {
-      if (!pressedSet.size) {
-        pressedKeysEl.textContent = "Ничего не нажато.";
-        pressedKeysEl.classList.add("empty");
-        return;
-      }
+  function setFocusState(hasFocus){
+    focusDot.classList.toggle("off", !hasFocus);
+    focusDot.style.background = hasFocus ? "var(--good)" : "var(--warn)";
+    focusDot.style.boxShadow = hasFocus ? "0 0 12px rgba(85,239,196,.55)" : "0 0 12px rgba(255,234,167,.45)";
+  }
 
-      const items = Array.from(pressedSet).sort();
-      pressedKeysEl.textContent = items.join(" + ");
-      pressedKeysEl.classList.remove("empty");
+  function setMods(e){
+    modCtrl.classList.toggle("on", !!e.ctrlKey);
+    modAlt.classList.toggle("on", !!e.altKey);
+    modShift.classList.toggle("on", !!e.shiftKey);
+    modMeta.classList.toggle("on", !!e.metaKey);
+  }
+
+  function updatePressedText(){
+    if(!pressed.size){
+      pressedNow.textContent = "—";
+      simulNow.textContent = "0";
+      return;
     }
-
-    function addToLog(e) {
-      const time = new Date();
-      const hh = String(time.getHours()).padStart(2, "0");
-      const mm = String(time.getMinutes()).padStart(2, "0");
-      const ss = String(time.getSeconds()).padStart(2, "0");
-      const stamp = `${hh}:${mm}:${ss}`;
-
-      const entry = {
-        stamp,
-        key: e.key === " " ? "Space" : e.key,
-        code: e.code,
-        keyCode: e.keyCode,
-        mods: [
-          e.ctrlKey ? "Ctrl" : null,
-          e.altKey ? "Alt" : null,
-          e.shiftKey ? "Shift" : null,
-          e.metaKey ? "Win/⌘" : null
-        ].filter(Boolean).join(" + ") || "—"
-      };
-
-      logData.unshift(entry);
-      if (logData.length > LOG_LIMIT) {
-        logData.length = LOG_LIMIT;
-      }
-
-      renderLog();
+    const list = Array.from(pressed).sort();
+    pressedNow.textContent = list.join(" + ");
+    simulNow.textContent = String(pressed.size);
+    if(pressed.size > maxSimul){
+      maxSimul = pressed.size;
+      simulMax.textContent = String(maxSimul);
     }
+  }
 
-    function renderLog() {
-      if (!logData.length) {
-        logListEl.innerHTML = '<div class="log-empty">Сделай пару нажатий — они появятся здесь.</div>';
-        return;
-      }
+  function highlight(code, on){
+    const el = keyByCode.get(code);
+    if(el) el.classList.toggle("pressed", on);
+  }
 
-      logListEl.innerHTML = logData.map(item => `
-        <div class="log-row">
-          <div class="log-left">
-            <span class="log-key">${escapeHtml(item.key)}</span>
-            <span class="log-meta">${escapeHtml(item.code)}</span>
-          </div>
-          <div class="log-meta">
-            ${escapeHtml(item.stamp)} · code: ${escapeHtml(String(item.keyCode))} · ${escapeHtml(item.mods)}
-          </div>
-        </div>
-      `).join("");
-    }
+  function setMain(e){
+    const display = (e.key === " ") ? "Space" : e.key;
+    bigKey.textContent = display;
+    bigKey.classList.remove("empty");
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+    mKey.textContent = String(e.key);
+    mCode.textContent = String(e.code);
+    mKeyCode.textContent = String(e.keyCode);
+    mLoc.textContent = locText(e.location);
 
-    function handleKeyDown(e) {
-      // чтобы страница не прокручивалась от пробела и стрелок
-      const blockScrollKeys = [" ", "Spacebar", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown"];
-      if (blockScrollKeys.includes(e.key)) {
-        e.preventDefault();
-      }
+    setMods(e);
+  }
 
-      updateMain(e);
+  function addLog(e){
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,"0");
+    const mm = String(now.getMinutes()).padStart(2,"0");
+    const ss = String(now.getSeconds()).padStart(2,"0");
+    const time = `${hh}:${mm}:${ss}`;
 
-      const id = e.code || e.key || String(e.keyCode);
-      pressedSet.add(id);
-      updatePressed();
+    const item = {
+      time,
+      key: (e.key === " ") ? "Space" : e.key,
+      code: e.code,
+      keyCode: e.keyCode,
+      mods: [
+        e.ctrlKey ? "Ctrl" : null,
+        e.altKey ? "Alt" : null,
+        e.shiftKey ? "Shift" : null,
+        e.metaKey ? "Win/⌘" : null
+      ].filter(Boolean).join(" + ") || "—",
+      type: e.type
+    };
 
-      if (!e.repeat) {
-        addToLog(e);
-      }
-    }
-
-    function handleKeyUp(e) {
-      const id = e.code || e.key || String(e.keyCode);
-      pressedSet.delete(id);
-      updatePressed();
-    }
-
-    function handleBlur() {
-      pressedSet.clear();
-      updatePressed();
-
-      modCtrlEl.classList.remove("active");
-      modAltEl.classList.remove("active");
-      modShiftEl.classList.remove("active");
-      modMetaEl.classList.remove("active");
-    }
-
-    clearLogBtn.addEventListener("click", () => {
-      logData.length = 0;
-      renderLog();
-    });
-
-    // Ставим фокус при клике на основную карточку и фон
-    focusZone.addEventListener("click", () => {
-      focusZone.focus({ preventScroll: true });
-    });
-
-    pageRoot.addEventListener("click", () => {
-      focusZone.focus({ preventScroll: true });
-    });
-    
-
-    window.addEventListener("keydown", handleKeyDown, { passive: false });
-    window.addEventListener("keyup", handleKeyUp);
-    window.addEventListener("blur", handleBlur);
-
-    // стартовое состояние
+    logData.unshift(item);
+    if(logData.length > LOG_LIMIT) logData.length = LOG_LIMIT;
     renderLog();
-    focusZone.tabIndex = 0;
-    focusZone.focus({ preventScroll: true });
-  </script>
+  }
+
+  function renderLog(){
+    if(!logData.length){
+      log.innerHTML = `<div class="empty">${escapeHtml(i18n[lang].empty)}</div>`;
+      return;
+    }
+    log.innerHTML = logData.map(x => `
+      <div class="logRow">
+        <div class="logLeft">
+          <span class="pillKey">${escapeHtml(x.key)}</span>
+          <span class="pillKey">${escapeHtml(x.code)}</span>
+        </div>
+        <div class="logMeta">${escapeHtml(x.time)} · keyCode:${escapeHtml(String(x.keyCode))} · ${escapeHtml(x.mods)}</div>
+      </div>
+    `).join("");
+  }
+
+  function maybePreventDefaults(e){
+    if(!captureMode) return;
+
+    // Prevent scrolling / page jump keys (still allows most browser shortcuts if user insists)
+    const block = new Set([" ", "Spacebar", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End"]);
+    if(block.has(e.key)) e.preventDefault();
+
+    // If user is holding Ctrl/Meta, do NOT block (so they can refresh/close tab if needed)
+    if(e.ctrlKey || e.metaKey) return;
+
+    // Prevent accidental focus shift with Tab inside tester
+    if(e.key === "Tab") e.preventDefault();
+  }
+
+  function onDown(e){
+    setFocusState(document.activeElement === mainCard);
+    if(document.activeElement !== mainCard) return;
+
+    maybePreventDefaults(e);
+    setMain(e);
+
+    const code = e.code || String(e.keyCode) || e.key;
+    if(!pressed.has(code)){
+      pressed.add(code);
+      highlight(code, true);
+      updatePressedText();
+    }
+    if(!e.repeat) addLog(e);
+  }
+
+  function onUp(e){
+    if(document.activeElement !== mainCard) return;
+
+    const code = e.code || String(e.keyCode) || e.key;
+    if(pressed.has(code)){
+      pressed.delete(code);
+      highlight(code, false);
+      updatePressedText();
+    }
+    setMods(e);
+  }
+
+  function resetAll(){
+    for(const code of pressed) highlight(code, false);
+    pressed.clear();
+    updatePressedText();
+    modCtrl.classList.remove("on");
+    modAlt.classList.remove("on");
+    modShift.classList.remove("on");
+    modMeta.classList.remove("on");
+    toastShow(i18n[lang].toastReset);
+  }
+
+  function copyText(txt){
+    return navigator.clipboard.writeText(txt);
+  }
+
+  function exportCSV(){
+    const rows = [["time","type","key","code","keyCode","mods"]];
+    for(const x of logData.slice().reverse()){
+      rows.push([x.time, x.type, x.key, x.code, String(x.keyCode), x.mods]);
+    }
+    const csv = rows.map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "keyboard-history.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+    toastShow(i18n[lang].toastCSV);
+  }
+
+  // UI bindings
+  btnTheme.addEventListener("click", () => {
+    theme = (theme === "dark") ? "light" : "dark";
+    applyTheme();
+  });
+
+  btnLang.addEventListener("click", () => {
+    lang = (lang === "ru") ? "en" : "ru";
+    localStorage.setItem("kb_lang", lang);
+    applyLang();
+    renderLog();
+  });
+
+  btnCapture.addEventListener("click", () => {
+    captureMode = !captureMode;
+    updateCaptureBtn();
+  });
+
+  btnClearPressed.addEventListener("click", resetAll);
+
+  btnClear.addEventListener("click", () => {
+    logData.length = 0;
+    renderLog();
+    toastShow(i18n[lang].toastCleared);
+  });
+
+  btnCopy.addEventListener("click", async () => {
+    const lines = logData.slice().reverse().map(x => `${x.time}\t${x.key}\t${x.code}\t${x.keyCode}\t${x.mods}`);
+    const txt = lines.join("\n") || "";
+    try{
+      await copyText(txt);
+      toastShow(i18n[lang].toastCopied);
+    }catch{
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = txt;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      toastShow(i18n[lang].toastCopied);
+    }
+  });
+
+  btnCSV.addEventListener("click", exportCSV);
+
+  btnShare.addEventListener("click", async () => {
+    const url = location.href.split("#")[0];
+    try{
+      await copyText(url);
+      toastShow(i18n[lang].toastLink);
+    }catch{
+      toastShow(url);
+    }
+  });
+
+  focusLink.addEventListener("click", (e) => { e.preventDefault(); mainCard.focus({preventScroll:true}); });
+  topLink.addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({top:0, behavior:"smooth"}); });
+
+  // Focus behavior
+  mainCard.addEventListener("click", () => mainCard.focus({preventScroll:true}));
+  window.addEventListener("focus", () => setFocusState(document.activeElement === mainCard));
+  window.addEventListener("blur", () => { setFocusState(false); resetAll(); });
+
+  // Key listeners
+  window.addEventListener("keydown", onDown, {passive:false});
+  window.addEventListener("keyup", onUp);
+
+  // Init
+  applyTheme();
+  applyLang();
+  renderLog();
+  setFocusState(false);
+  updateCaptureBtn();
+  mainCard.focus({preventScroll:true});
+
+})();
+</script>
 </body>
 </html>
