@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Тест клавиатуры</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; }
+    .box { padding: 16px; border: 2px dashed #888; border-radius: 12px; }
+    .row { margin: 10px 0; font-size: 18px; }
+    code { background: #f2f2f2; padding: 2px 6px; border-radius: 6px; }
+    .hint { color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Тест клавиатуры</h1>
+  <div class="box" tabindex="0" id="zone">
+    <div class="row">Нажатая клавиша: <code id="key">—</code></div>
+    <div class="row">Код (event.code): <code id="code">—</code></div>
+    <div class="row">KeyCode (устар., но иногда нужен): <code id="keyCode">—</code></div>
+    <div class="row">Ctrl / Alt / Shift: <code id="mods">—</code></div>
+    <div class="row hint">Кликни сюда и нажимай любые клавиши 🙂</div>
+  </div>
+
+  <script>
+    const zone = document.getElementById("zone");
+    const keyEl = document.getElementById("key");
+    const codeEl = document.getElementById("code");
+    const keyCodeEl = document.getElementById("keyCode");
+    const modsEl = document.getElementById("mods");
+
+    zone.focus();
+
+    function mods(e) {
+      const arr = [];
+      if (e.ctrlKey) arr.push("Ctrl");
+      if (e.altKey) arr.push("Alt");
+      if (e.shiftKey) arr.push("Shift");
+      if (e.metaKey) arr.push("Win/Command");
+      return arr.length ? arr.join(" + ") : "—";
+    }
+
+    window.addEventListener("keydown", (e) => {
+      keyEl.textContent = e.key;
+      codeEl.textContent = e.code;
+      keyCodeEl.textContent = e.keyCode; // устаревшее, но показываем
+      modsEl.textContent = mods(e);
+
+      // чтобы не срабатывали лишние действия типа прокрутки стрелками/пробелом
+      e.preventDefault();
+    }, { passive: false });
+  </script>
+</body>
+</html>
