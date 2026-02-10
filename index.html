@@ -53,6 +53,27 @@
       overflow-x:hidden;
     }
 
+  /* === FULLSCREEN KEYBOARD MODE === */
+
+/* Общая сетка: убираем правую колонку, оставляем 2 колонки */
+.appGrid{
+  grid-template-columns: 420px 1fr !important;
+}
+
+/* Правая колонка (инструкции/фишки) — прячем на десктопе */
+.rightCol{
+  display: none !important;
+}
+
+/* Если у тебя другой класс — попробуй эти тоже (на всякий случай) */
+.aside,
+.sidebar,
+.rightPanel,
+.panelRight{
+  display: none !important;
+}
+
+
     /* Top bar */
     .top{
       position:sticky; top:0; z-index:5;
@@ -1024,6 +1045,41 @@
     } else {
       swStatus.textContent = "Offline cache: n/a";
     }
+/* Клавиатура — максимально широкая */
+.keyboardWrap{
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Чтобы клавиатура занимала почти весь экран по высоте */
+.keyboardCard{
+  height: calc(100vh - 140px) !important; /* 140px — запас под верхние кнопки/шапку */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Область самой клавиатуры пусть растягивается */
+.keyboard{
+  flex: 1 !important;
+  height: 100% !important;
+}
+
+/* Если у тебя была прокрутка внутри клавиатуры — убираем, пусть растягивается */
+.keyboardScroll{
+  overflow: visible !important;
+}
+
+/* Кнопки больше и “дороже” выглядят */
+.key{
+  min-height: 52px !important;
+  font-size: 14px !important;
+  border-radius: 14px !important;
+}
+
+/* Чтобы всё не упиралось в края */
+.mainCol{
+  padding-right: 0 !important;
+}
 
     // init
     renderKeyboard();
@@ -1031,4 +1087,6 @@
     setFocusState(false);
   </script>
 </body>
-</html>
+</html> 
+
+
