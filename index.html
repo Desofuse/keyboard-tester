@@ -6,12 +6,10 @@
   <meta name="theme-color" content="#0b0b14" />
 
   <title>Тестер клавиатуры — Keyboard Tester</title>
-  <meta name="description" content="Проверка клавиатуры: подсветка нажатий, numpad, стрелки, история, экспорт, rollover/ghosting. Работает локально в браузере и офлайн (PWA)." />
+  <meta name="description" content="Проверка клавиатуры: подсветка по event.code, numpad, стрелки, история, экспорт CSV, rollover/ghosting. Работает локально и офлайн (PWA)." />
 
-  <!-- PWA -->
+  <!-- (опционально) PWA -->
   <link rel="manifest" href="manifest.webmanifest" />
-
-  <!-- Icons (если у тебя уже лежат в корне/папке — оставь так) -->
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -20,16 +18,14 @@
     :root{
       --bg0:#070710;
       --bg1:#0b0b14;
+
       --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.04);
       --border: rgba(255,255,255,.10);
-      --border2: rgba(255,255,255,.14);
+
       --txt: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.64);
-      --muted2: rgba(255,255,255,.46);
+      --muted: rgba(255,255,255,.62);
 
       --accent: rgba(162,155,255,.85);
-      --accent2: rgba(108,92,231,.60);
       --good: rgba(85,239,196,.85);
 
       --shadow: 0 22px 70px rgba(0,0,0,.55);
@@ -37,6 +33,13 @@
 
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+
+      --topH: 72px;
+      --pad: 14px;
+
+      /* базовый размер клавиш ДО авто-масштабирования */
+      --k: 76px;
+      --gap: 10px;
     }
 
     *{box-sizing:border-box}
@@ -50,41 +53,24 @@
         radial-gradient(900px 520px at 86% 30%, rgba(85,239,196,.12), transparent 60%),
         radial-gradient(800px 520px at 40% 95%, rgba(108,92,231,.10), transparent 65%),
         linear-gradient(180deg, var(--bg0), var(--bg1));
-      overflow-x:hidden;
+      overflow: hidden; /* ВАЖНО: нет скролла страницы */
     }
 
-  /* === FULLSCREEN KEYBOARD MODE === */
-
-/* Общая сетка: убираем правую колонку, оставляем 2 колонки */
-.appGrid{
-  grid-template-columns: 420px 1fr !important;
-}
-
-/* Правая колонка (инструкции/фишки) — прячем на десктопе */
-.rightCol{
-  display: none !important;
-}
-
-/* Если у тебя другой класс — попробуй эти тоже (на всякий случай) */
-.aside,
-.sidebar,
-.rightPanel,
-.panelRight{
-  display: none !important;
-}
-
-
-    /* Top bar */
-    .top{
-      position:sticky; top:0; z-index:5;
+    /* ===== Top bar ===== */
+    header.top{
+      height: var(--topH);
+      position: sticky;
+      top: 0;
+      z-index: 5;
       background: linear-gradient(180deg, rgba(7,7,16,.92), rgba(7,7,16,.70));
       backdrop-filter: blur(10px);
       border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
     }
     .topInner{
-      max-width: 1280px;
-      margin:0 auto;
-      padding: 14px 16px;
+      width: 100%;
+      padding: 12px 16px;
       display:flex;
       align-items:center;
       gap:12px;
@@ -102,10 +88,16 @@
       box-shadow: var(--shadow2);
       font-weight:900;
       letter-spacing:.5px;
+      user-select:none;
     }
     .brandTxt{display:flex; flex-direction:column; gap:2px}
     .brandTxt b{font-size:14px; letter-spacing:.2px}
-    .brandTxt span{font-size:12px; color:var(--muted)}
+    .brandTxt span{
+      font-size:12px; color:var(--muted);
+      max-width: 52vw;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+
     .controls{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
     .pill{
       display:inline-flex; align-items:center; gap:8px;
@@ -115,33 +107,32 @@
       background: rgba(255,255,255,.06);
       color:var(--txt);
       cursor:pointer;
-      font-weight:800;
+      font-weight:900;
       font-size:12px;
+      user-select:none;
     }
     .pill:active{transform: translateY(1px)}
-    .dot{
-      width:8px; height:8px; border-radius:99px; background: var(--muted2);
-      box-shadow: 0 0 0 3px rgba(255,255,255,.05);
-    }
-    .dot.live{ background: var(--good); box-shadow: 0 0 0 4px rgba(85,239,196,.10), 0 0 18px rgba(85,239,196,.35);}
     .pillOn{
       border-color: rgba(162,155,255,.35);
       background: rgba(108,92,231,.16);
       box-shadow: 0 0 0 4px rgba(108,92,231,.08);
     }
-    .ghostBtn{opacity:.9}
-
-    /* Layout */
-    .wrap{
-      max-width:1280px;
-      margin: 18px auto 26px;
-      padding: 0 16px;
-      display:grid;
-      grid-template-columns: 380px 1fr;
-      gap: 16px;
+    .dot{
+      width:8px; height:8px; border-radius:99px; background: rgba(255,255,255,.35);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.05);
     }
-    @media (max-width: 980px){
-      .wrap{grid-template-columns: 1fr; }
+    .dot.live{
+      background: var(--good);
+      box-shadow: 0 0 0 4px rgba(85,239,196,.10), 0 0 18px rgba(85,239,196,.35);
+    }
+
+    /* ===== Stage ===== */
+    main.stage{
+      height: calc(100vh - var(--topH));
+      padding: var(--pad);
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
     }
 
     .card{
@@ -152,39 +143,21 @@
       backdrop-filter: blur(10px);
       overflow:hidden;
     }
-    .cardInner{ padding: 16px; }
-    .h{
-      font-size: 12px;
-      letter-spacing: .22em;
-      color: rgba(255,255,255,.72);
-      text-transform: uppercase;
-      margin: 0 0 10px;
-    }
-    .bigKey{
-      border-radius: 18px;
-      background:
-        radial-gradient(220px 140px at 25% 25%, rgba(255,255,255,.10), transparent 60%),
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 22px 55px rgba(0,0,0,.40);
-      padding: 18px;
+
+    .stageBar{
+      padding: 12px 14px;
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:space-between;
-      gap:12px;
+      gap:10px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
     }
-    .bigKeyLeft{display:flex; flex-direction:column; gap:6px}
-    .keyLabel{font-size:11px; color:var(--muted); letter-spacing:.12em; text-transform:uppercase}
-    .keyName{
-      font-size: 44px;
-      font-weight: 1000;
-      letter-spacing: .06em;
-      line-height:1.05;
-    }
-    .miniMeta{
-      display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end;
-      text-align:right;
-    }
+    .stageBar .left{display:flex; flex-direction:column; gap:2px; min-width: 260px;}
+    .stageBar .left b{font-size:13px}
+    .stageBar .left span{font-size:12px; color:var(--muted)}
+    .stageBar .right{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center}
+
     .chip{
       font-family: var(--mono);
       font-size: 11px;
@@ -194,6 +167,7 @@
       background: rgba(0,0,0,.20);
       color: rgba(255,255,255,.88);
       white-space:nowrap;
+      user-select:none;
     }
     .chip.on{
       border-color: rgba(162,155,255,.45);
@@ -201,78 +175,72 @@
       box-shadow: 0 0 0 4px rgba(108,92,231,.08);
     }
 
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .kv{
-      border-radius: 16px;
-      background: rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08);
-      padding: 10px 12px;
-      min-height: 62px;
-    }
-    .kv b{display:block; font-size:11px; color:var(--muted)}
-    .kv span{font-family: var(--mono); font-size:12px; color: rgba(255,255,255,.86); word-break:break-word}
-    .rowLine{height:1px; background:rgba(255,255,255,.06); margin: 14px 0;}
-
-    /* KB stage full-width feel */
-    .kbStage{
-      border-radius: 22px;
-      background: rgba(8,8,16,.70);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      overflow:hidden;
-      min-height: 78vh;
-      display:flex;
-      flex-direction:column;
-    }
-    .kbBar{
+    /* ===== Typed field like online testers ===== */
+    .typedBox{
       padding: 12px 14px;
       display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      gap:10px;
+      align-items:stretch;
     }
-    .kbBar .left{
-      display:flex; flex-direction:column; gap:3px;
-      min-width: 260px;
-    }
-    .kbBar .left b{font-size:13px}
-    .kbBar .left span{font-size:12px; color:var(--muted)}
-    .kbBar .right{
-      display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
-    }
-
-    .kbInner{
+    textarea.typed{
       flex:1;
-      padding: 14px;
+      min-height: 78px;
+      max-height: 110px;
+      resize: none;
+      outline: none;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      color: rgba(255,255,255,.90);
+      padding: 10px 12px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.35;
+      overflow: hidden; /* без скролла */
+    }
+    .btn{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--txt);
+      padding: 9px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 900;
+      font-size: 12px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:active{transform: translateY(1px)}
+
+    /* ===== Keyboard viewport (NO SCROLL) ===== */
+    .kbViewport{
+      flex: 1;
+      min-height: 0;
       display:flex;
-      align-items:center;
+      align-items:flex-start;
       justify-content:center;
-      overflow:auto;
+      padding: 10px;
+      overflow: hidden; /* критично: НЕТ прокрутки */
     }
 
-    /* Keyboard */
     .keyboard{
-      --k: clamp(42px, 3.1vw, 66px);
-      --gap: clamp(8px, 0.9vw, 12px);
-      display:flex; flex-direction:column; gap: var(--gap);
+      display:flex;
+      flex-direction:column;
+      gap: var(--gap);
       width: max-content;
       padding: 6px;
+      transform-origin: top left;
+      will-change: transform;
+      user-select:none;
     }
+
     .kRow{display:flex; gap: var(--gap); align-items:stretch}
-    .spacer{flex: 1}
+    .spacer{flex:1}
 
     .key{
       position:relative;
       width: var(--k);
-      height: calc(var(--k) * 1.10);
+      height: calc(var(--k) * 1.08);
       padding: 10px 12px;
       border-radius: 14px;
       background:
@@ -282,15 +250,16 @@
       box-shadow:
         inset 0 1px 0 rgba(255,255,255,.14),
         0 18px 35px rgba(0,0,0,.45);
-      user-select:none;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
       transition: transform .06s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
     }
+
     .key .kTop{font-size: 11px; opacity: .62; font-family: var(--mono);}
     .key .kMain{font-size: 16px; font-weight: 1000; letter-spacing: .18px;}
     .key .kCode{font-size: 10px; opacity: .40; font-family: var(--mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
     .key.w1_25{width: calc(var(--k) * 1.25)}
     .key.w1_5{width: calc(var(--k) * 1.50)}
     .key.w1_75{width: calc(var(--k) * 1.75)}
@@ -298,6 +267,7 @@
     .key.w2_25{width: calc(var(--k) * 2.25)}
     .key.w2_75{width: calc(var(--k) * 2.75)}
     .key.w6{width: calc(var(--k) * 6.20)}
+
     .key.pressed{
       transform: translateY(1px) scale(.99);
       border-color: rgba(162,155,255,.55);
@@ -316,32 +286,79 @@
       background: radial-gradient(circle at 35% 25%, rgba(162,155,255,.18), transparent 55%);
       pointer-events:none;
     }
+
     .key.sticky{
       border-color: rgba(255,210,0,.30);
       box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 0 0 4px rgba(255,210,0,.08), 0 18px 45px rgba(0,0,0,.50);
     }
 
-    /* History / tools */
-    .toolsRow{display:flex; gap:10px; flex-wrap:wrap}
-    .btn{
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: var(--txt);
-      padding: 9px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      font-weight: 900;
-      font-size: 12px;
+    /* ===== Info Drawer (история + event.key/code) ===== */
+    .drawer{
+      position: fixed;
+      right: 14px;
+      top: calc(var(--topH) + 14px);
+      width: min(440px, calc(100vw - 28px));
+      max-height: calc(100vh - var(--topH) - 28px);
+      display:none;
+      flex-direction:column;
+      overflow:hidden;
+      z-index: 50;
     }
-    .btn:active{transform: translateY(1px)}
-    .log{
-      max-height: 260px;
+    .drawer.show{display:flex}
+
+    .drawerInner{
+      padding: 14px;
       overflow:auto;
+      scrollbar-width: thin;
+    }
+    .h{
+      font-size: 12px;
+      letter-spacing: .22em;
+      color: rgba(255,255,255,.72);
+      text-transform: uppercase;
+      margin: 0 0 10px;
+    }
+    .bigKeyBox{
+      border-radius: 18px;
+      background:
+        radial-gradient(220px 140px at 25% 25%, rgba(255,255,255,.10), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 22px 55px rgba(0,0,0,.40);
+      padding: 14px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .bigKeyBox .name{
+      font-size: 38px;
+      font-weight: 1000;
+      letter-spacing: .06em;
+      line-height:1.05;
+    }
+    .rowLine{height:1px; background:rgba(255,255,255,.06); margin: 12px 0;}
+
+    .kvGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .kv{
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      padding: 10px 12px;
+      min-height: 62px;
+    }
+    .kv b{display:block; font-size:11px; color:var(--muted)}
+    .kv span{font-family: var(--mono); font-size:12px; color: rgba(255,255,255,.86); word-break:break-word}
+
+    .log{
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.08);
       background: rgba(0,0,0,.16);
       padding: 10px;
-      margin-top: 10px;
     }
     .logRow{
       display:flex;
@@ -363,29 +380,13 @@
       line-height: 1.35;
     }
 
-    /* Focus overlay helper (no bottom-right icons) */
-    .focusHint{
-      display:flex; align-items:center; gap:8px;
-      font-size: 12px; color: var(--muted);
-      margin-top: 10px;
+    @media (max-width: 900px){
+      :root{ --k: 68px; --gap: 9px; }
+      .brandTxt span{max-width: 40vw;}
     }
-    .focusBadge{
-      display:inline-flex; align-items:center; gap:8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.20);
-      font-weight: 900;
-      cursor:pointer;
-    }
-    .focusBadge.on{
-      border-color: rgba(85,239,196,.28);
-      background: rgba(85,239,196,.08);
-    }
-
-    /* Make sure no random floating buttons appear */
-    #focusTop, #toTop, #scrollTop, .toTop, .scrollTop, .fab, .floating, .cornerBadge, .bottomRight {
-      display:none !important;
+    @media (max-width: 620px){
+      :root{ --k: 62px; --gap: 8px; }
+      .brandTxt span{display:none;}
     }
   </style>
 </head>
@@ -397,134 +398,157 @@
         <div class="logo">K</div>
         <div class="brandTxt">
           <b>Тестер клавиатуры</b>
-          <span>Визуальная клавиатура + numpad, история, export CSV, ghosting/rollover. Всё локально.</span>
+          <span>Подсветка по event.code • RU/EN • Win/Mac • Capture • Fullscreen • Offline</span>
         </div>
       </div>
 
       <div class="controls">
-        <div class="pill" id="livePill" title="Статус">
-          <span class="dot live" id="liveDot"></span>
-          <span id="liveText">Live</span>
+        <div class="pill" title="Статус">
+          <span class="dot live"></span>
+          <span>Live</span>
         </div>
 
-        <button class="pill pillOn" id="captureBtn" title="Capture Mode: меньше мешают хоткеи/прокрутка">
-          Capture: ON
-        </button>
-
-        <button class="pill" id="langBtn" title="Меняет надписи на виртуальной клавиатуре">RU</button>
+        <button class="pill pillOn" id="captureBtn" title="Меньше мешают хоткеи/скролл">Capture: ON</button>
+        <button class="pill" id="langBtn" title="Подписи на клавиатуре">RU</button>
         <button class="pill" id="osBtn" title="Подписи Win/Mac">Windows</button>
+        <button class="pill" id="fsBtn" title="Fullscreen">Fullscreen</button>
+        <button class="pill" id="infoBtn" title="Инфо/история">Info</button>
 
-        <button class="pill ghostBtn" id="installBtn" hidden title="Установить как приложение (PWA)">
-          Установить
-        </button>
+        <button class="pill" id="installBtn" hidden title="Установить как приложение (PWA)">Установить</button>
       </div>
     </div>
   </header>
 
-  <main class="wrap" id="app" tabindex="0" aria-label="Keyboard tester app">
-    <!-- LEFT: Info -->
-    <section class="card">
-      <div class="cardInner">
-        <div class="h">Текущая клавиша</div>
-
-        <div class="bigKey">
-          <div class="bigKeyLeft">
-            <div class="keyLabel">нажата</div>
-            <div class="keyName" id="bigKeyName">—</div>
-          </div>
-
-          <div class="miniMeta">
-            <span class="chip" id="chipKey">event.key: —</span>
-            <span class="chip" id="chipCode">event.code: —</span>
-            <span class="chip" id="chipKeyCode">keyCode: —</span>
-          </div>
-        </div>
-
-        <div class="grid2">
-          <div class="kv"><b>Расположение</b><span id="loc">—</span></div>
-          <div class="kv"><b>Повтор (repeat)</b><span id="rep">—</span></div>
-          <div class="kv"><b>Сейчас зажаты (count)</b><span id="downCount">0</span></div>
-          <div class="kv"><b>Максимум за сессию</b><span id="maxCount">0</span></div>
-        </div>
-
-        <div class="rowLine"></div>
-
-        <div class="h">Модификаторы</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <span class="chip" id="mCtrl">Ctrl</span>
-          <span class="chip" id="mAlt">Alt</span>
-          <span class="chip" id="mShift">Shift</span>
-          <span class="chip" id="mMeta">Win/⌘</span>
-          <span class="chip" id="mCaps">Caps</span>
-          <span class="chip" id="mNum">Num</span>
-        </div>
-
-        <div class="focusHint">
-          <span class="focusBadge" id="focusBadge">Нужен фокус</span>
-          <span>Кликни по странице — и жми клавиши. В Capture Mode меньше мешают хоткеи/скролл.</span>
-        </div>
-
-        <div class="rowLine"></div>
-
-        <div class="h">История нажатий</div>
-        <div class="toolsRow">
-          <button class="btn" id="copyBtn">Копировать</button>
-          <button class="btn" id="csvBtn">Экспорт CSV</button>
-          <button class="btn" id="clearBtn">Очистить</button>
-        </div>
-
-        <div class="log" id="log"></div>
-
-        <div class="rowLine"></div>
-        <div class="note">
-          Подсветка идёт по <b>event.code</b> — это “физическая” клавиша, идеально для игр/настроек.<br/>
-          <b>event.key</b> зависит от раскладки (RU/EN) в системе.
-        </div>
+  <main class="stage card" id="app" tabindex="0" aria-label="Keyboard tester">
+    <div class="stageBar">
+      <div class="left">
+        <b>Виртуальная клавиатура (полный layout)</b>
+        <span>Всегда на весь экран — без прокрутки. Масштабирование автоматически.</span>
       </div>
-    </section>
-
-    <!-- RIGHT: Full keyboard stage -->
-    <section class="kbStage card">
-      <div class="kbBar">
-        <div class="left">
-          <b>Виртуальная клавиатура (полный layout)</b>
-          <span>Стрелки + навигация + numpad. Переключатель RU/EN меняет подписи.</span>
-        </div>
-        <div class="right">
-          <span class="chip" id="privacy">Без сервера</span>
-          <span class="chip" id="swStatus">Offline cache: ok</span>
-        </div>
+      <div class="right">
+        <span class="chip" id="focusChip">Фокус: —</span>
+        <span class="chip" id="downChip">Зажато: 0</span>
+        <span class="chip" id="maxChip">Макс: 0</span>
+        <span class="chip" id="swChip">Offline: …</span>
       </div>
+    </div>
 
-      <div class="kbInner">
-        <div id="keyboard" class="keyboard" aria-label="Keyboard visualization"></div>
-      </div>
-    </section>
+    <div class="typedBox">
+      <textarea class="typed" id="typed" readonly spellcheck="false">Нажимай клавиши — тут будет вывод, как в онлайн-тестерах.</textarea>
+      <button class="btn" id="typedClearBtn">Очистить</button>
+    </div>
+
+    <div class="kbViewport" id="kbViewport">
+      <div id="keyboard" class="keyboard" aria-label="Keyboard visualization"></div>
+    </div>
   </main>
+
+  <aside class="drawer card" id="drawer" aria-label="Info drawer">
+    <div class="stageBar">
+      <div class="left">
+        <b>Инфо</b>
+        <span>event.key / event.code / история</span>
+      </div>
+      <div class="right">
+        <button class="btn" id="copyBtn">Копировать</button>
+        <button class="btn" id="csvBtn">CSV</button>
+        <button class="btn" id="clearBtn">Очистить</button>
+      </div>
+    </div>
+
+    <div class="drawerInner">
+      <div class="h">Текущая клавиша</div>
+
+      <div class="bigKeyBox">
+        <div>
+          <div class="note">нажата</div>
+          <div class="name" id="bigKeyName">—</div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end">
+          <span class="chip" id="chipKey">event.key: —</span>
+          <span class="chip" id="chipCode">event.code: —</span>
+          <span class="chip" id="chipKeyCode">keyCode: —</span>
+        </div>
+      </div>
+
+      <div class="rowLine"></div>
+
+      <div class="h">Статус</div>
+      <div class="kvGrid">
+        <div class="kv"><b>Расположение</b><span id="loc">—</span></div>
+        <div class="kv"><b>Повтор (repeat)</b><span id="rep">—</span></div>
+        <div class="kv"><b>Сейчас зажаты</b><span id="downCount">0</span></div>
+        <div class="kv"><b>Максимум</b><span id="maxCount">0</span></div>
+      </div>
+
+      <div class="rowLine"></div>
+
+      <div class="h">Модификаторы</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <span class="chip" id="mCtrl">Ctrl</span>
+        <span class="chip" id="mAlt">Alt</span>
+        <span class="chip" id="mShift">Shift</span>
+        <span class="chip" id="mMeta">Win/⌘</span>
+        <span class="chip" id="mCaps">Caps</span>
+        <span class="chip" id="mNum">Num</span>
+      </div>
+
+      <div class="rowLine"></div>
+
+      <div class="h">История</div>
+      <div class="log" id="log"></div>
+
+      <div class="rowLine"></div>
+      <div class="note">
+        Подсветка идёт по <b>event.code</b> — это “физическая” клавиша (лучшее для игр).<br/>
+        <b>event.key</b> зависит от раскладки (RU/EN) в системе.
+      </div>
+    </div>
+  </aside>
 
   <script>
     // =========================
     // STATE
     // =========================
     const app = document.getElementById("app");
+    const keyboard = document.getElementById("keyboard");
+    const kbViewport = document.getElementById("kbViewport");
 
     let CAPTURE = true;
-    let UI_LANG = "ru";  // "ru" | "en"
-    let UI_OS   = "win"; // "win" | "mac"
+    let UI_LANG = "ru";  // ru | en
+    let UI_OS   = "win"; // win | mac
 
     const down = new Set();
     let maxDown = 0;
 
     const history = [];
-    const HISTORY_LIMIT = 25;
+    const HISTORY_LIMIT = 40;
+
+    const typedArea = document.getElementById("typed");
+    const typedTokens = [];
 
     // =========================
     // UI refs
     // =========================
+    const captureBtn = document.getElementById("captureBtn");
+    const langBtn = document.getElementById("langBtn");
+    const osBtn = document.getElementById("osBtn");
+    const fsBtn = document.getElementById("fsBtn");
+    const infoBtn = document.getElementById("infoBtn");
+    const drawer = document.getElementById("drawer");
+
+    const installBtn = document.getElementById("installBtn");
+    const swChip = document.getElementById("swChip");
+
+    const focusChip = document.getElementById("focusChip");
+    const downChip = document.getElementById("downChip");
+    const maxChip = document.getElementById("maxChip");
+
     const bigKeyName = document.getElementById("bigKeyName");
     const chipKey = document.getElementById("chipKey");
     const chipCode = document.getElementById("chipCode");
     const chipKeyCode = document.getElementById("chipKeyCode");
+
     const locEl = document.getElementById("loc");
     const repEl = document.getElementById("rep");
     const downCountEl = document.getElementById("downCount");
@@ -537,19 +561,11 @@
     const mCaps = document.getElementById("mCaps");
     const mNum  = document.getElementById("mNum");
 
-    const focusBadge = document.getElementById("focusBadge");
     const logEl = document.getElementById("log");
-
-    const captureBtn = document.getElementById("captureBtn");
-    const langBtn = document.getElementById("langBtn");
-    const osBtn = document.getElementById("osBtn");
-
     const copyBtn = document.getElementById("copyBtn");
     const csvBtn = document.getElementById("csvBtn");
     const clearBtn = document.getElementById("clearBtn");
-
-    const installBtn = document.getElementById("installBtn");
-    const swStatus = document.getElementById("swStatus");
+    const typedClearBtn = document.getElementById("typedClearBtn");
 
     // =========================
     // Keyboard layout (FULL)
@@ -571,6 +587,7 @@
       Minus:"_", Equal:"+", BracketLeft:"{", BracketRight:"}", Backslash:"|",
       Semicolon:":", Quote:'"', Comma:"<", Period:">", Slash:"?"
     };
+
     const RU_SHIFT = {
       Digit1:"!", Digit2:'"', Digit3:"№", Digit4:";", Digit5:"%", Digit6:":",
       Digit7:"?", Digit8:"*", Digit9:"(", Digit0:")",
@@ -578,7 +595,6 @@
     };
 
     const LAYOUT = [
-      // r1: esc + F + prt + nav + numpad top
       [
         K("Escape","Esc"),
         S(0.6),
@@ -593,7 +609,6 @@
         K("NumLock","Num"),
         K("NumpadDivide","/"),K("NumpadMultiply","*"),K("NumpadSubtract","-")
       ],
-      // r2: ` 123... backspace + insert/home/pgup + numpad 789 +
       [
         K("Backquote","`","~"),
         K("Digit1","1","!"),K("Digit2","2","@"),K("Digit3","3","#"),K("Digit4","4","$"),K("Digit5","5","%"),
@@ -604,9 +619,8 @@
         K("Insert","Ins"),K("Home","Home"),K("PageUp","PgUp"),
         S(0.35),
         K("Numpad7","7"),K("Numpad8","8"),K("Numpad9","9"),
-        K("NumpadAdd","+","", "h2")
+        K("NumpadAdd","+")
       ],
-      // r3: tab qwerty + []\ + del/end/pgdn + numpad 456
       [
         K("Tab","Tab","", "w1_5"),
         K("KeyQ","Q"),K("KeyW","W"),K("KeyE","E"),K("KeyR","R"),K("KeyT","T"),K("KeyY","Y"),K("KeyU","U"),K("KeyI","I"),K("KeyO","O"),K("KeyP","P"),
@@ -617,7 +631,6 @@
         S(0.35),
         K("Numpad4","4"),K("Numpad5","5"),K("Numpad6","6")
       ],
-      // r4: caps asdf... enter + (gap) + numpad 123 enter
       [
         K("CapsLock","Caps","", "w1_75"),
         K("KeyA","A"),K("KeyS","S"),K("KeyD","D"),K("KeyF","F"),K("KeyG","G"),K("KeyH","H"),K("KeyJ","J"),K("KeyK","K"),K("KeyL","L"),
@@ -627,9 +640,8 @@
         S(2.0),
         S(0.35),
         K("Numpad1","1"),K("Numpad2","2"),K("Numpad3","3"),
-        K("NumpadEnter","Enter","", "h2")
+        K("NumpadEnter","Enter")
       ],
-      // r5: shift zxc... shift + (gap) + numpad 0 .
       [
         K("ShiftLeft","Shift","", "w2_25"),
         K("KeyZ","Z"),K("KeyX","X"),K("KeyC","C"),K("KeyV","V"),K("KeyB","B"),K("KeyN","N"),K("KeyM","M"),
@@ -641,7 +653,6 @@
         K("Numpad0","0","", "w2"),
         K("NumpadDecimal",".")
       ],
-      // r6: ctrl win alt space alt win menu ctrl + arrows cluster
       [
         K("ControlLeft","Ctrl","", "w1_5"),
         K("MetaLeft","Win","", "w1_5"),
@@ -666,17 +677,19 @@
       return {type:"spacer", flex};
     }
 
-    // =========================
-    // Render keyboard
-    // =========================
-    const keyboard = document.getElementById("keyboard");
-
     function el(tag, cls){
       const x = document.createElement(tag);
       if (cls) x.className = cls;
       return x;
     }
 
+    function byCode(code){
+      return keyboard.querySelector(`[data-code="${code}"]`);
+    }
+
+    // =========================
+    // Render keyboard
+    // =========================
     function renderKeyboard(){
       keyboard.innerHTML = "";
       LAYOUT.forEach((row) => {
@@ -709,14 +722,11 @@
       });
 
       applyKeyLegends();
-    }
-
-    function byCode(code){
-      return keyboard.querySelector(`[data-code="${code}"]`);
+      requestAnimationFrame(fitKeyboardToScreen);
     }
 
     // =========================
-    // Apply RU/EN legends
+    // RU/EN + Win/Mac legends
     // =========================
     function applyKeyLegends(){
       keyboard.querySelectorAll(".key[data-code]").forEach((k) => {
@@ -739,13 +749,8 @@
         // Letters
         if (code.startsWith("Key")){
           const letter = code.replace("Key","");
-          if (UI_LANG === "ru"){
-            mainEl.textContent = RU[code] || letter;
-            topEl.textContent = "";
-          } else {
-            mainEl.textContent = letter;
-            topEl.textContent = "";
-          }
+          mainEl.textContent = (UI_LANG === "ru") ? (RU[code] || letter) : letter;
+          topEl.textContent = "";
           return;
         }
 
@@ -753,20 +758,65 @@
         if (code.startsWith("Digit")){
           const d = code.replace("Digit","");
           mainEl.textContent = d;
-          topEl.textContent = (UI_LANG === "ru") ? (RU_SHIFT[code] || EN_SHIFT[code] || "") : (EN_SHIFT[code] || "");
+          const topMap = (UI_LANG === "ru") ? RU_SHIFT : EN_SHIFT;
+          topEl.textContent = topMap[code] || "";
           return;
         }
 
-        // Punctuation top labels
-        const topMap = (UI_LANG === "ru") ? RU_SHIFT : EN_SHIFT;
-        if (topMap[code]) topEl.textContent = topMap[code];
-
-        // For RU: special mapping for backquote
+        // Punctuation / Backquote
         if (UI_LANG === "ru" && code === "Backquote"){
           mainEl.textContent = RU.Backquote;
+          topEl.textContent = "";
+          return;
         }
+        const topMap = (UI_LANG === "ru") ? RU_SHIFT : EN_SHIFT;
+        topEl.textContent = topMap[code] || topEl.textContent || "";
       });
     }
+
+    // =========================
+    // FIT keyboard to screen (NO SCROLL)
+    // =========================
+    function fitKeyboardToScreen(){
+      keyboard.style.transform = ""; // reset for measurements
+
+      const availW = kbViewport.clientWidth - 10;
+      const availH = kbViewport.clientHeight - 10;
+
+      const naturalW = keyboard.scrollWidth;
+      const naturalH = keyboard.scrollHeight;
+
+      if (!naturalW || !naturalH) return;
+
+      const scaleW = availW / naturalW;
+      const scaleH = availH / naturalH;
+
+      let s = Math.min(scaleW, scaleH);
+      s = Math.max(0.55, Math.min(1.35, s)); // limits
+
+      keyboard.style.transform = `scale(${s})`;
+    }
+
+    window.addEventListener("resize", () => requestAnimationFrame(fitKeyboardToScreen));
+    document.addEventListener("fullscreenchange", () => requestAnimationFrame(fitKeyboardToScreen));
+
+    // =========================
+    // Focus
+    // =========================
+    function setFocusChip(){
+      const focused = (document.activeElement === app || app.contains(document.activeElement));
+      focusChip.textContent = focused ? "Фокус: да" : "Фокус: нет";
+      focusChip.classList.toggle("on", focused);
+    }
+
+    document.addEventListener("click", () => app.focus({preventScroll:true}));
+    app.addEventListener("focus", setFocusChip);
+    app.addEventListener("blur", setFocusChip);
+
+    requestAnimationFrame(() => {
+      app.focus({preventScroll:true});
+      setFocusChip();
+    });
 
     // =========================
     // Capture mode
@@ -774,38 +824,25 @@
     function shouldPrevent(e){
       if (!CAPTURE) return false;
 
-      // Не ломаем системные комбинации полностью, но уменьшаем скролл/хоткеи.
-      // Можешь расширить список, если надо.
+      const focused = (document.activeElement === app || app.contains(document.activeElement));
+      if (!focused) return false;
+
       const preventCodes = new Set([
         "Space",
         "ArrowUp","ArrowDown","ArrowLeft","ArrowRight",
         "PageUp","PageDown","Home","End"
       ]);
 
-      // Если нажаты Ctrl/Meta — часто это хоткеи браузера. В capture можно их тоже гасить.
-      if ((e.ctrlKey || e.metaKey) && CAPTURE) return true;
+      // не мешаем некоторым базовым хоткеям (можешь расширить)
+      const allow = (e.ctrlKey || e.metaKey) && ["KeyL","KeyR","KeyT","KeyW"].includes(e.code);
+      if (allow) return false;
 
+      if (e.ctrlKey || e.metaKey) return true;
       return preventCodes.has(e.code);
     }
 
     // =========================
-    // Focus handling
-    // =========================
-    function setFocusState(on){
-      focusBadge.classList.toggle("on", on);
-      focusBadge.textContent = on ? "Фокус есть" : "Нужен фокус";
-    }
-
-    document.addEventListener("click", () => {
-      app.focus({preventScroll:true});
-    });
-    app.addEventListener("focus", () => setFocusState(true));
-    app.addEventListener("blur", () => setFocusState(false));
-
-    focusBadge.addEventListener("click", () => app.focus({preventScroll:true}));
-
-    // =========================
-    // Key helpers
+    // Helpers / UI updates
     // =========================
     function keyLocationName(code){
       if (code.endsWith("Left")) return "левая";
@@ -815,7 +852,7 @@
     }
 
     function setModChip(chip, on){
-      chip.classList.toggle("on", on);
+      chip.classList.toggle("on", !!on);
     }
 
     function updateModsFromEvent(e){
@@ -823,16 +860,17 @@
       setModChip(mAlt,   e.altKey);
       setModChip(mShift, e.shiftKey);
       setModChip(mMeta,  e.metaKey);
-      // Caps/Num lock (через getModifierState)
       try{
         setModChip(mCaps, e.getModifierState && e.getModifierState("CapsLock"));
         setModChip(mNum,  e.getModifierState && e.getModifierState("NumLock"));
       }catch{}
     }
 
-    // =========================
-    // History UI
-    // =========================
+    function toTime(){
+      const d = new Date();
+      return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+    }
+
     function pushHistory(entry){
       history.unshift(entry);
       if (history.length > HISTORY_LIMIT) history.pop();
@@ -878,9 +916,10 @@
       });
     }
 
-    function toTime(){
-      const d = new Date();
-      return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+    function safeCSV(v){
+      const s = String(v ?? "");
+      if (/[",\n]/.test(s)) return `"${s.replaceAll('"','""')}"`;
+      return s;
     }
 
     function exportCSV(){
@@ -891,18 +930,38 @@
       return [header, ...rows].join("\n");
     }
 
-    function safeCSV(v){
-      const s = String(v ?? "");
-      if (/[",\n]/.test(s)) return `"${s.replaceAll('"','""')}"`;
-      return s;
-    }
-
     async function copyHistory(){
       const lines = history
         .slice().reverse()
         .map(h => `${h.time}\t${h.key}\t${h.code}\tkeyCode:${h.keyCode}${h.repeat ? "\trepeat" : ""}`)
         .join("\n");
       await navigator.clipboard.writeText(lines || "");
+    }
+
+    function updateCounters(){
+      downChip.textContent = `Зажато: ${down.size}`;
+      maxChip.textContent = `Макс: ${maxDown}`;
+      downCountEl.textContent = String(down.size);
+      maxCountEl.textContent = String(maxDown);
+    }
+
+    function tokenForTyped(e){
+      // максимально похоже на онлайн-тестеры
+      if (e.key === " ") return "<Space>";
+      if (e.key === "Backspace") return "<Backspace>";
+      if (e.key === "Enter") return "<Enter>";
+      if (e.key === "Tab") return "<Tab>";
+      if (e.key === "Escape") return "<Esc>";
+      if (e.key.startsWith("Arrow")) return `<${e.key}>`;
+      if (e.key.length === 1) return e.key;
+      return `<${e.key}>`;
+    }
+
+    function renderTyped(){
+      // ограничим чтобы не разрасталось вечно
+      const maxTokens = 140;
+      if (typedTokens.length > maxTokens) typedTokens.splice(0, typedTokens.length - maxTokens);
+      typedArea.value = typedTokens.join(" ");
     }
 
     // =========================
@@ -914,11 +973,9 @@
       down.add(e.code);
       if (down.size > maxDown) maxDown = down.size;
 
-      // Visual pressed
       const keyEl = byCode(e.code);
       if (keyEl) keyEl.classList.add("pressed");
 
-      // Update main info
       bigKeyName.textContent = (e.key && e.key.length === 1) ? e.key.toUpperCase() : (e.key || "—");
       chipKey.textContent = `event.key: ${e.key ?? "—"}`;
       chipCode.textContent = `event.code: ${e.code ?? "—"}`;
@@ -927,17 +984,18 @@
       locEl.textContent = keyLocationName(e.code);
       repEl.textContent = e.repeat ? "да" : "нет";
 
-      downCountEl.textContent = String(down.size);
-      maxCountEl.textContent = String(maxDown);
-
       updateModsFromEvent(e);
 
-      // Sticky highlight for lock keys
       if (e.code === "CapsLock" || e.code === "NumLock"){
-        if (keyEl) keyEl.classList.toggle("sticky", e.getModifierState && e.getModifierState(e.code === "CapsLock" ? "CapsLock" : "NumLock"));
+        try{
+          const st = e.getModifierState(e.code === "CapsLock" ? "CapsLock" : "NumLock");
+          if (keyEl) keyEl.classList.toggle("sticky", !!st);
+        }catch{}
       }
 
-      // History (не спамим повторами слишком)
+      typedTokens.push(tokenForTyped(e));
+      renderTyped();
+
       pushHistory({
         time: toTime(),
         key: e.key ?? "",
@@ -945,27 +1003,30 @@
         keyCode: e.keyCode ?? "",
         repeat: !!e.repeat
       });
+
+      updateCounters();
     }, {passive:false});
 
     window.addEventListener("keyup", (e) => {
       if (shouldPrevent(e)) e.preventDefault();
 
       down.delete(e.code);
-      downCountEl.textContent = String(down.size);
 
       const keyEl = byCode(e.code);
       if (keyEl) keyEl.classList.remove("pressed");
+
+      updateCounters();
     }, {passive:false});
 
     window.addEventListener("blur", () => {
-      // remove stuck pressed when alt-tab
+      // чистим залипшие подсветки при alt-tab
       down.forEach(code => {
         const keyEl = byCode(code);
         if (keyEl) keyEl.classList.remove("pressed");
       });
       down.clear();
-      downCountEl.textContent = "0";
-      setFocusState(false);
+      updateCounters();
+      setFocusChip();
     });
 
     // =========================
@@ -987,6 +1048,25 @@
       UI_OS = (UI_OS === "win") ? "mac" : "win";
       osBtn.textContent = (UI_OS === "mac") ? "Mac" : "Windows";
       applyKeyLegends();
+    });
+
+    fsBtn.addEventListener("click", async () => {
+      try{
+        if (!document.fullscreenElement){
+          await document.documentElement.requestFullscreen();
+        }else{
+          await document.exitFullscreen();
+        }
+      }catch{}
+    });
+
+    infoBtn.addEventListener("click", () => {
+      drawer.classList.toggle("show");
+    });
+
+    typedClearBtn.addEventListener("click", () => {
+      typedTokens.length = 0;
+      typedArea.value = "";
     });
 
     copyBtn.addEventListener("click", async () => {
@@ -1019,7 +1099,7 @@
     });
 
     // =========================
-    // PWA install
+    // PWA install (optional)
     // =========================
     let deferredPrompt = null;
     window.addEventListener("beforeinstallprompt", (e) => {
@@ -1036,57 +1116,21 @@
     });
 
     // =========================
-    // Service Worker
+    // Service Worker (optional)
     // =========================
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js")
-        .then(() => swStatus.textContent = "Offline cache: ok")
-        .catch(() => swStatus.textContent = "Offline cache: error");
+        .then(() => swChip.textContent = "Offline: ok")
+        .catch(() => swChip.textContent = "Offline: error");
     } else {
-      swStatus.textContent = "Offline cache: n/a";
+      swChip.textContent = "Offline: n/a";
     }
-/* Клавиатура — максимально широкая */
-.keyboardWrap{
-  width: 100% !important;
-  max-width: none !important;
-}
-
-/* Чтобы клавиатура занимала почти весь экран по высоте */
-.keyboardCard{
-  height: calc(100vh - 140px) !important; /* 140px — запас под верхние кнопки/шапку */
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-/* Область самой клавиатуры пусть растягивается */
-.keyboard{
-  flex: 1 !important;
-  height: 100% !important;
-}
-
-/* Если у тебя была прокрутка внутри клавиатуры — убираем, пусть растягивается */
-.keyboardScroll{
-  overflow: visible !important;
-}
-
-/* Кнопки больше и “дороже” выглядят */
-.key{
-  min-height: 52px !important;
-  font-size: 14px !important;
-  border-radius: 14px !important;
-}
-
-/* Чтобы всё не упиралось в края */
-.mainCol{
-  padding-right: 0 !important;
-}
 
     // init
     renderKeyboard();
     renderHistory();
-    setFocusState(false);
+    updateCounters();
+    fitKeyboardToScreen();
   </script>
 </body>
-</html> 
-
-
+</html>
