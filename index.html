@@ -1,140 +1,147 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Проверка клавиатуры онлайн: подсветка нажатых клавиш, история нажатий, rollover/ghosting тест. Ничего не отправляется на сервер." />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="description" content="Проверка клавиатуры онлайн: визуальная клавиатура (стрелки, блок навигации, numpad), тест ghosting/rollover, история, экспорт. Работает локально." />
   <meta name="theme-color" content="#0b0b12" />
-  <meta property="og:title" content="Keyboard Tester" />
-  <meta property="og:description" content="Проверка клавиатуры: подсветка клавиш, лог, rollover/ghosting тест." />
-  <meta property="og:type" content="website" />
+  <link rel="manifest" href="./manifest.webmanifest" />
   <title>Keyboard Tester</title>
 
   <style>
     :root{
-      --bg: #07070d;
-      --bg2:#0b0b12;
-      --card:#111225;
-      --card2:#151738;
-      --text:#f6f6fb;
-      --muted:#a8abc6;
-      --border: rgba(255,255,255,.10);
-      --border2: rgba(255,255,255,.06);
+      --bg:#070710;
+      --bg2:#0a0a14;
+      --card:#101024;
+      --card2:#121235;
+      --text:#f3f4ff;
+      --muted:#a7aac7;
+      --muted2:#7c80a6;
+      --border:rgba(255,255,255,.11);
+      --border2:rgba(255,255,255,.07);
+      --shadow:0 30px 90px rgba(0,0,0,.62);
+      --radius:18px;
+      --radius2:14px;
+
       --accent:#6c5ce7;
       --accent2:#a29bff;
       --good:#55efc4;
       --warn:#ffeaa7;
       --bad:#ff7675;
-      --shadow: 0 30px 80px rgba(0,0,0,.65);
-      --radius: 18px;
-      --radius2: 14px;
+
       --kbd:#0e0f1d;
-      --kbd2:#12142a;
-      --kbdPressed: rgba(108,92,231,.22);
-      --kbdPressedBorder: rgba(162,155,255,.85);
-      --kbdText:#eaeafd;
-      --kbdMuted:#b6b9d8;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --kbd2:#12142b;
+      --kbdText:#ececff;
+      --kbdMuted:#b7bbdf;
+      --kbdBorder:rgba(255,255,255,.10);
+
+      --pressBg:rgba(108,92,231,.18);
+      --pressBorder:rgba(162,155,255,.85);
+      --pressGlow:0 16px 40px rgba(108,92,231,.28);
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
     }
 
     [data-theme="light"]{
-      --bg: #f5f6ff;
-      --bg2:#edf0ff;
+      --bg:#f6f7ff;
+      --bg2:#eef1ff;
       --card:#ffffff;
       --card2:#ffffff;
-      --text:#0b0b12;
-      --muted:#4c506d;
-      --border: rgba(10,10,18,.12);
-      --border2: rgba(10,10,18,.08);
-      --shadow: 0 18px 55px rgba(20,20,40,.15);
+      --text:#0b0b13;
+      --muted:#48506a;
+      --muted2:#5b6282;
+      --border:rgba(10,10,20,.14);
+      --border2:rgba(10,10,20,.10);
+      --shadow:0 18px 60px rgba(18,22,60,.16);
+
       --kbd:#f3f5ff;
-      --kbd2:#eef1ff;
-      --kbdPressed: rgba(108,92,231,.16);
-      --kbdPressedBorder: rgba(108,92,231,.55);
-      --kbdText:#0b0b12;
-      --kbdMuted:#3c4160;
+      --kbd2:#edf0ff;
+      --kbdText:#0b0b13;
+      --kbdMuted:#404862;
+      --kbdBorder:rgba(10,10,20,.14);
+
+      --pressBg:rgba(108,92,231,.14);
+      --pressBorder:rgba(108,92,231,.60);
+      --pressGlow:0 14px 34px rgba(108,92,231,.18);
     }
 
-    *{ box-sizing:border-box; margin:0; padding:0; }
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
       min-height:100vh;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--text);
       background:
         radial-gradient(1200px 700px at 10% -10%, rgba(108,92,231,.26), transparent 60%),
         radial-gradient(900px 600px at 90% 0%, rgba(162,155,255,.18), transparent 55%),
         linear-gradient(180deg, var(--bg2), var(--bg));
-      padding: 26px;
+      padding: 22px;
     }
+    a{color:var(--accent2);text-decoration:none}
+    a:hover{text-decoration:underline}
 
     .wrap{
-      max-width: 1220px;
-      margin: 0 auto;
+      max-width: 1280px;
+      margin:0 auto;
       display:grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.2fr);
-      gap: 18px;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.1fr);
+      gap: 16px;
       align-items:start;
     }
-    @media (max-width: 1050px){
-      .wrap{ grid-template-columns: 1fr; }
+    @media (max-width: 1080px){
+      .wrap{grid-template-columns:1fr}
     }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent 45%), var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), transparent 45%), var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
       overflow:hidden;
     }
-    .inner{ padding: 18px 18px 16px; }
     .header{
+      padding: 16px 16px 10px;
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
       gap: 12px;
       flex-wrap:wrap;
-      padding: 18px 18px 8px;
     }
     .brand{
       display:flex;
-      align-items:center;
       gap: 10px;
-      min-width: 260px;
+      align-items:center;
+      min-width: 280px;
     }
     .logo{
-      width: 40px; height: 40px;
-      border-radius: 12px;
-      background: radial-gradient(circle at 30% 20%, rgba(162,155,255,.35), rgba(108,92,231,.25) 40%, rgba(0,0,0,.2) 78%),
-                  rgba(108,92,231,.10);
-      border: 1px solid rgba(255,255,255,.12);
-      display:flex; align-items:center; justify-content:center;
-      font-weight: 800;
-      letter-spacing: .02em;
-      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      width: 42px; height: 42px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(circle at 30% 20%, rgba(162,155,255,.35), rgba(108,92,231,.22) 45%, rgba(0,0,0,.12) 80%),
+        rgba(108,92,231,.10);
+      box-shadow: 0 16px 50px rgba(0,0,0,.35);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+      letter-spacing:.02em;
+      user-select:none;
     }
     .title h1{
       font-size: 18px;
-      font-weight: 760;
+      font-weight: 820;
       letter-spacing: .02em;
-      margin-bottom: 2px;
     }
     .title p{
       font-size: 12.5px;
       color: var(--muted);
-      line-height: 1.35;
-      max-width: 560px;
+      margin-top: 3px;
+      line-height:1.35;
+      max-width: 620px;
     }
 
-    .controls{
-      display:flex;
-      gap: 8px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:flex-end;
-    }
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
     .btn{
       appearance:none;
-      border: 1px solid var(--border2);
+      border:1px solid var(--border2);
       background: rgba(255,255,255,.03);
       color: var(--text);
       border-radius: 999px;
@@ -142,162 +149,51 @@
       font-size: 12px;
       cursor:pointer;
       transition: transform .12s ease, background .12s ease, border-color .12s ease;
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
+      display:inline-flex;align-items:center;gap:8px;
       user-select:none;
       white-space:nowrap;
     }
-    .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.06); border-color: var(--border); }
-    .btn:active{ transform: translateY(0px) scale(.99); }
+    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.06);border-color:var(--border)}
+    .btn:active{transform:translateY(0) scale(.99)}
     .btn.primary{
       background: linear-gradient(90deg, rgba(108,92,231,.25), rgba(162,155,255,.18));
-      border-color: rgba(162,155,255,.35);
+      border-color: rgba(162,155,255,.38);
     }
     .chip{
       font-size: 11px;
-      padding: 5px 8px;
+      padding: 6px 9px;
       border-radius: 999px;
-      border: 1px solid var(--border2);
+      border:1px solid var(--border2);
       color: var(--muted);
-      display:inline-flex; gap: 6px; align-items:center;
+      display:inline-flex;gap:7px;align-items:center;
       background: rgba(0,0,0,.12);
+      user-select:none;
     }
-    .dot{
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--good);
-      box-shadow: 0 0 12px rgba(85,239,196,.55);
-    }
-    .dot.off{ background: var(--warn); box-shadow: 0 0 12px rgba(255,234,167,.45); }
+    [data-theme="light"] .chip{background: rgba(10,10,20,.03)}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 12px rgba(85,239,196,.55)}
+    .dot.warn{background:var(--warn);box-shadow:0 0 12px rgba(255,234,167,.45)}
 
-    .grid2{
+    .inner{padding: 14px 16px 16px}
+
+    .grid{
       display:grid;
-      grid-template-columns: minmax(0, 1.25fr) minmax(0, .95fr);
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.25fr);
       gap: 14px;
+      align-items:start;
     }
-    @media (max-width: 850px){
-      .grid2{ grid-template-columns: 1fr; }
-    }
+    @media (max-width: 920px){ .grid{grid-template-columns:1fr} }
 
     .panel{
-      border: 1px solid var(--border2);
+      border:1px solid var(--border2);
       background: rgba(0,0,0,.12);
       border-radius: var(--radius2);
-      padding: 14px;
+      padding: 12px;
     }
-    [data-theme="light"] .panel{
-      background: rgba(10,10,18,.03);
-    }
-
-    .kbox{
-      border-radius: 16px;
-      border: 1px solid var(--border2);
-      background: radial-gradient(circle at 25% 10%, rgba(255,255,255,.06), transparent 55%), rgba(0,0,0,.18);
-      padding: 14px;
-      overflow:hidden;
-    }
-    [data-theme="light"] .kbox{
-      background: radial-gradient(circle at 25% 10%, rgba(10,10,18,.03), transparent 55%), rgba(10,10,18,.02);
-    }
-
-    .bigkey{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap: 12px;
-      flex-wrap:wrap;
-      margin-bottom: 10px;
-    }
-    .bigkey .left{ display:flex; flex-direction:column; gap: 6px; }
-    .label{
-      font-size: 11px;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .keycap{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-width: 150px;
-      min-height: 64px;
-      padding: 10px 16px;
-      border-radius: 16px;
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: 0 18px 50px rgba(0,0,0,.55);
-      font-size: 34px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    [data-theme="light"] .keycap{ background: rgba(10,10,18,.04); box-shadow: 0 18px 40px rgba(20,20,40,.10); }
-    .keycap.empty{
-      font-size: 16px;
-      font-weight: 650;
-      letter-spacing: .02em;
-      text-transform:none;
-      color: var(--muted);
-    }
-
-    .meta{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    @media (max-width: 520px){ .meta{ grid-template-columns: 1fr; } }
-    .metaRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .badge{
-      font-family: var(--mono);
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 10px;
-      border: 1px solid var(--border2);
-      background: rgba(255,255,255,.03);
-      color: var(--text);
-      max-width: 62%;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .mods{
-      display:flex;
-      flex-wrap:wrap;
-      gap: 6px;
-      margin-top: 12px;
-      align-items:center;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .miniKey{
-      font-family: var(--mono);
-      font-size: 12px;
-      padding: 5px 8px;
-      border-radius: 10px;
-      border: 1px solid var(--border2);
-      background: rgba(255,255,255,.03);
-      color: var(--kbdMuted);
-      transition: all .12s ease;
-    }
-    .miniKey.on{
-      border-color: var(--kbdPressedBorder);
-      background: var(--kbdPressed);
-      color: var(--text);
-      box-shadow: 0 0 0 1px rgba(162,155,255,.35);
-    }
+    [data-theme="light"] .panel{background: rgba(10,10,20,.03)}
 
     .sectionTitle{
       font-size: 12px;
-      letter-spacing: .14em;
+      letter-spacing:.14em;
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 8px;
@@ -307,38 +203,147 @@
       gap: 10px;
     }
 
-    /* Virtual keyboard */
-    .kbWrap{
+    .hero{
+      border:1px solid var(--border2);
       border-radius: 16px;
-      border: 1px solid var(--border2);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,.05), transparent 55%),
+        rgba(0,0,0,.18);
+      padding: 14px;
+      overflow:hidden;
+    }
+    [data-theme="light"] .hero{background: radial-gradient(circle at 20% 10%, rgba(10,10,20,.03), transparent 55%), rgba(10,10,20,.02)}
+
+    .bigTop{
+      display:flex;
+      justify-content:space-between;
+      gap: 12px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      margin-bottom: 10px;
+    }
+    .cap{
+      min-width: 180px;
+      min-height: 72px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.35);
+      box-shadow: 0 20px 55px rgba(0,0,0,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing:.08em;
+      text-transform: uppercase;
+      user-select:none;
+    }
+    [data-theme="light"] .cap{background: rgba(10,10,20,.04);box-shadow: 0 18px 42px rgba(18,22,60,.12)}
+    .cap.small{
+      font-size: 16px;
+      letter-spacing:.02em;
+      text-transform:none;
+      color: var(--muted);
+      font-weight: 720;
+    }
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    @media (max-width: 520px){ .meta{grid-template-columns:1fr} }
+    .metaRow{
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      align-items:center;
+    }
+    .badge{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 10px;
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      max-width: 62%;
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow:ellipsis;
+    }
+
+    .mods{
+      display:flex; flex-wrap:wrap; gap:6px;
+      align-items:center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 12px;
+    }
+    .miniKey{
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 5px 8px;
+      border-radius: 10px;
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.03);
+      color: var(--kbdMuted);
+      transition: all .12s ease;
+      user-select:none;
+    }
+    .miniKey.on{
+      border-color: var(--pressBorder);
+      background: var(--pressBg);
+      color: var(--text);
+      box-shadow: 0 0 0 1px rgba(162,155,255,.26);
+    }
+
+    /* Keyboard */
+    .kbShell{
+      border:1px solid var(--border2);
+      border-radius: 16px;
       background: rgba(0,0,0,.16);
       padding: 12px;
       overflow:auto;
     }
-    [data-theme="light"] .kbWrap{ background: rgba(10,10,18,.02); }
+    [data-theme="light"] .kbShell{background: rgba(10,10,20,.02)}
+    .kbTop{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:10px;flex-wrap:wrap;margin-bottom: 10px;
+    }
+    .hint{
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .hint b{color: var(--text)}
+    .kbdGrid{
+      display:grid;
+      gap: 10px;
+      min-width: 1060px; /* ensures full layout fits with scroll if needed */
+    }
 
-    .row{ display:grid; gap: 8px; margin-bottom: 8px; }
-    .row:last-child{ margin-bottom: 0; }
-
+    .row{display:grid;gap:8px}
     .key{
-      position:relative;
       height: 44px;
       border-radius: 12px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent 50%), var(--kbd);
-      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent 52%), var(--kbd);
+      border: 1px solid var(--kbdBorder);
       color: var(--kbdText);
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:flex;align-items:center;justify-content:center;
       font-size: 12px;
       font-family: var(--mono);
+      position:relative;
       user-select:none;
-      transition: transform .08s ease, background .12s ease, border-color .12s ease;
+      transition: transform .08s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
       min-width: 44px;
     }
     [data-theme="light"] .key{
-      background: linear-gradient(180deg, rgba(10,10,18,.03), transparent 50%), var(--kbd);
-      border-color: rgba(10,10,18,.12);
+      background: linear-gradient(180deg, rgba(10,10,20,.03), transparent 52%), var(--kbd);
     }
     .key .sub{
       position:absolute;
@@ -346,33 +351,38 @@
       bottom: 6px;
       font-size: 10px;
       color: var(--kbdMuted);
-      opacity: .85;
+      opacity: .90;
     }
     .key.pressed{
       background: linear-gradient(180deg, rgba(162,155,255,.22), rgba(108,92,231,.14)), var(--kbd2);
-      border-color: var(--kbdPressedBorder);
+      border-color: var(--pressBorder);
+      box-shadow: var(--pressGlow);
       transform: translateY(-1px);
-      box-shadow: 0 10px 26px rgba(108,92,231,.22);
+    }
+    .key.sticky{
+      outline: 2px solid rgba(255,234,167,.35);
+      box-shadow: 0 0 0 1px rgba(255,234,167,.25), var(--pressGlow);
     }
 
-    .row.r1{ grid-template-columns: repeat(14, 1fr); min-width: 860px; }
-    .row.r2{ grid-template-columns: 1.2fr repeat(12, 1fr) 1.8fr; min-width: 860px; }
-    .row.r3{ grid-template-columns: 1.6fr repeat(12, 1fr) 2.2fr; min-width: 860px; }
-    .row.r4{ grid-template-columns: 2.1fr repeat(11, 1fr) 2.7fr; min-width: 860px; }
-    .row.r5{ grid-template-columns: 2.7fr repeat(10, 1fr) 3.2fr; min-width: 860px; }
-    .row.r6{ grid-template-columns: 1.6fr 1.6fr 1.6fr 6.6fr 1.6fr 1.6fr 1.6fr; min-width: 860px; }
+    /* Layout: full-size ANSI + nav cluster + arrows + numpad */
+    .rFn{ grid-template-columns: repeat(4, 1fr) 0.5fr repeat(4,1fr) 0.5fr repeat(4,1fr) 0.5fr repeat(3,1fr); }
+    .r1 { grid-template-columns: repeat(14, 1fr) 0.5fr repeat(3,1fr) 0.5fr repeat(4,1fr); }
+    .r2 { grid-template-columns: 1.5fr repeat(12, 1fr) 2.2fr 0.5fr 1fr 1fr 1fr 0.5fr 1fr 1fr 1fr 1fr; }
+    .r3 { grid-template-columns: 2.1fr repeat(12, 1fr) 2.7fr 0.5fr 1fr 1fr 1fr 0.5fr 1fr 1fr 1fr 1fr; }
+    .r4 { grid-template-columns: 2.6fr repeat(11, 1fr) 3.2fr 0.5fr 1fr 1fr 1fr 0.5fr 1fr 1fr 1fr 1fr; }
+    .r5 { grid-template-columns: 3.2fr repeat(10, 1fr) 3.8fr 0.5fr 1fr 1fr 1fr 0.5fr 1fr 1fr 1fr 1fr; }
+    .r6 { grid-template-columns: 1.8fr 1.4fr 1.4fr 7.0fr 1.4fr 1.4fr 1.4fr 0.5fr 1.2fr 1.2fr 1.2fr 0.5fr 2.2fr 1fr 1fr 1fr; }
+    /* Arrows row is included via r6 (cluster) */
 
-    /* Log */
     .log{
       max-height: 240px;
       overflow:auto;
-      border: 1px dashed var(--border2);
+      border:1px dashed var(--border2);
       border-radius: 14px;
       padding: 10px;
       background: rgba(0,0,0,.14);
     }
-    [data-theme="light"] .log{ background: rgba(10,10,18,.02); }
-
+    [data-theme="light"] .log{background: rgba(10,10,20,.02)}
     .logRow{
       display:flex;
       justify-content:space-between;
@@ -380,58 +390,19 @@
       padding: 6px 0;
       border-bottom: 1px solid rgba(255,255,255,.04);
     }
-    [data-theme="light"] .logRow{ border-bottom: 1px solid rgba(10,10,18,.06); }
-    .logRow:last-child{ border-bottom:none; }
-    .logLeft{ display:flex; gap: 8px; flex-wrap:wrap; align-items:center; }
-    .pillKey{
+    [data-theme="light"] .logRow{border-bottom: 1px solid rgba(10,10,20,.06)}
+    .logRow:last-child{border-bottom:none}
+    .logLeft{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .pill{
       font-family: var(--mono);
       font-size: 12px;
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid var(--border2);
+      border:1px solid var(--border2);
       background: rgba(255,255,255,.03);
     }
-    .logMeta{
-      font-size: 11px;
-      color: var(--muted);
-      white-space:nowrap;
-    }
-    .empty{
-      font-size: 13px;
-      color: var(--muted);
-      padding: 6px 2px;
-    }
-
-    .note{
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-    .note b{ color: var(--text); }
-
-    .statGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    @media (max-width: 520px){ .statGrid{ grid-template-columns: 1fr; } }
-    .stat{
-      border: 1px solid var(--border2);
-      border-radius: 14px;
-      padding: 10px 12px;
-      background: rgba(255,255,255,.03);
-    }
-    .stat .n{
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: .02em;
-    }
-    .stat .t{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-
+    .logMeta{font-size: 11px;color: var(--muted);white-space:nowrap}
+    .empty{font-size: 13px;color: var(--muted);padding: 6px 2px}
     .footer{
       margin-top: 10px;
       font-size: 11.5px;
@@ -441,8 +412,17 @@
       gap: 10px;
       flex-wrap:wrap;
     }
-    .footer a{ color: var(--accent2); text-decoration:none; }
-    .footer a:hover{ text-decoration:underline; }
+
+    .statGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:520px){.statGrid{grid-template-columns:1fr}}
+    .stat{
+      border:1px solid var(--border2);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.03);
+    }
+    .stat .n{font-size: 22px;font-weight: 900}
+    .stat .t{font-size: 12px;color: var(--muted);margin-top: 2px}
 
     .toast{
       position: fixed;
@@ -461,28 +441,24 @@
       box-shadow: 0 18px 60px rgba(0,0,0,.45);
       z-index: 99;
     }
-    [data-theme="light"] .toast{ background: rgba(10,10,18,.78); }
+    [data-theme="light"] .toast{background: rgba(10,10,20,.78)}
+    .toast.show{display:inline-flex;animation: pop .18s ease}
+    @keyframes pop{from{transform:translateX(-50%) translateY(8px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
 
-    .toast.show{ display:inline-flex; animation: pop .18s ease; }
-    @keyframes pop{ from{ transform: translateX(-50%) translateY(8px); opacity:0 } to{ transform: translateX(-50%) translateY(0); opacity:1 } }
-
-    .sr{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+    .sr{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
   </style>
 </head>
 
 <body>
-  <div class="wrap" id="app">
+  <div class="wrap">
     <!-- MAIN -->
-    <section class="card" id="mainCard" tabindex="0" aria-label="Keyboard tester">
+    <section class="card" id="main" tabindex="0" aria-label="Keyboard tester">
       <div class="header">
         <div class="brand">
           <div class="logo">K</div>
           <div class="title">
             <h1 id="uiTitle">Тестер клавиатуры</h1>
-            <p id="uiSub">
-              Подсветка клавиш, история нажатий и тест одновременных нажатий (rollover/ghosting).
-              Никаких данных на сервер — всё работает локально в браузере.
-            </p>
+            <p id="uiSub">Визуальная клавиатура (стрелки + numpad), история, экспорт, ghosting/rollover тест. Всё работает локально в браузере.</p>
           </div>
         </div>
 
@@ -492,42 +468,47 @@
             <span id="uiLive">Live</span>
           </span>
 
-          <button class="btn primary" id="btnCapture" title="Capture Mode — ловить клавиши внутри теста">
-            <span id="uiCapture">Capture: ON</span>
-          </button>
+          <button class="btn primary" id="btnInstall" style="display:none;">⬇️ <span id="uiInstall">Установить</span></button>
+          <button class="btn primary" id="btnCapture"><span id="uiCapture">Capture: ON</span></button>
 
-          <button class="btn" id="btnLang" title="Language / Язык">RU</button>
+          <button class="btn" id="btnLang" title="Language">RU</button>
           <button class="btn" id="btnTheme" title="Theme">🌙</button>
-          <button class="btn" id="btnShare" title="Copy site link">🔗 <span id="uiShare">Ссылка</span></button>
+
+          <button class="btn" id="btnShare">🔗 <span id="uiShare">Ссылка</span></button>
         </div>
       </div>
 
       <div class="inner">
-        <div class="grid2">
-          <!-- LEFT: Live -->
-          <div class="kbox">
-            <div class="bigkey">
-              <div class="left">
-                <div class="label" id="uiCurrentKeyLabel">Текущая клавиша</div>
-                <div class="keycap empty" id="bigKey">Нажми любую клавишу</div>
+        <div class="grid">
+          <!-- LEFT -->
+          <div class="hero">
+            <div class="bigTop">
+              <div>
+                <div class="sectionTitle"><span id="uiCurrent">Текущая клавиша</span></div>
+                <div class="cap small" id="cap">Нажми любую клавишу</div>
               </div>
 
-              <div class="panel" style="min-width:260px; max-width:360px;">
+              <div class="panel" style="min-width:300px;max-width:420px;">
                 <div class="sectionTitle">
-                  <span id="uiQuickHelpTitle">Быстро</span>
+                  <span id="uiHowFast">Как пользоваться</span>
+                  <span class="chip" title="Focus">
+                    <span class="dot warn" id="focusDot"></span>
+                    <span id="uiFocus">Нужен фокус</span>
+                  </span>
                 </div>
-                <p class="note" id="uiQuickHelp">
-                  Кликни по карточке и нажимай клавиши. Для сочетаний зажимай несколько кнопок.
-                  Если мешают браузерные хоткеи — включи/выключи <b>Capture Mode</b>.
-                </p>
+                <div class="hint" id="uiHint">
+                  Кликни по карточке и нажимай клавиши — справа будет подсветка.
+                  Для сочетаний удерживай несколько кнопок.
+                  Если браузер мешает хоткеями — включи <b>Capture Mode</b>.
+                </div>
               </div>
             </div>
 
-            <div class="meta" aria-label="Keyboard event fields">
+            <div class="meta">
               <div class="metaRow"><span>event.key</span><span class="badge" id="mKey">—</span></div>
               <div class="metaRow"><span>event.code</span><span class="badge" id="mCode">—</span></div>
               <div class="metaRow"><span>keyCode</span><span class="badge" id="mKeyCode">—</span></div>
-              <div class="metaRow"><span id="uiLocation">Расположение</span><span class="badge" id="mLoc">—</span></div>
+              <div class="metaRow"><span id="uiLoc">Расположение</span><span class="badge" id="mLoc">—</span></div>
             </div>
 
             <div class="mods">
@@ -535,209 +516,269 @@
               <span class="miniKey" id="modCtrl">Ctrl</span>
               <span class="miniKey" id="modAlt">Alt</span>
               <span class="miniKey" id="modShift">Shift</span>
-              <span class="miniKey" id="modMeta">Win / ⌘</span>
+              <span class="miniKey" id="modMeta">Win/⌘</span>
+              <span class="miniKey" id="modCaps">Caps</span>
+              <span class="miniKey" id="modNum">Num</span>
             </div>
 
             <div style="height:12px"></div>
 
             <div class="panel">
               <div class="sectionTitle">
-                <span id="uiPressedNow">Сейчас зажаты</span>
-                <button class="btn" id="btnClearPressed" title="Clear pressed (if window lost focus)">
-                  <span id="uiReset">Сброс</span>
-                </button>
+                <span id="uiPressed">Сейчас зажаты</span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="btn" id="btnReset"><span id="uiReset">Сброс</span></button>
+                </div>
               </div>
-              <div class="note" id="pressedNow">—</div>
+              <div class="hint" id="pressedNow">—</div>
             </div>
 
             <div style="height:12px"></div>
 
             <div class="panel">
-              <div class="sectionTitle">
-                <span id="uiRollover">Rollover / Ghosting тест</span>
-              </div>
+              <div class="sectionTitle"><span id="uiGhost">Rollover / Ghosting тест</span></div>
               <div class="statGrid">
                 <div class="stat">
-                  <div class="n" id="simulNow">0</div>
-                  <div class="t" id="uiSimulNow">Сейчас одновременно</div>
+                  <div class="n" id="simNow">0</div>
+                  <div class="t" id="uiSimNow">Сейчас одновременно</div>
                 </div>
                 <div class="stat">
-                  <div class="n" id="simulMax">0</div>
-                  <div class="t" id="uiSimulMax">Максимум за сессию</div>
+                  <div class="n" id="simMax">0</div>
+                  <div class="t" id="uiSimMax">Максимум за сессию</div>
                 </div>
               </div>
               <div style="height:10px"></div>
-              <p class="note" id="uiRolloverHint">
-                Зажми много букв одновременно (например, <b>ASDFJKL;</b>) и смотри счётчик.
-                Если некоторые клавиши «пропадают» — это ограничение клавиатуры (ghosting).
-              </p>
+              <div class="hint" id="uiGhostHint">
+                Зажми 6–10 клавиш (например, ASDFJKL;) и смотри счётчик.  
+                Если часть клавиш «не зажимается» — это ограничение клавиатуры (ghosting).
+              </div>
             </div>
           </div>
 
-          <!-- RIGHT: Virtual keyboard + Log -->
-          <div class="kbox">
-            <div class="sectionTitle">
-              <span id="uiVisualKeyboard">Виртуальная клавиатура</span>
-              <span class="chip" title="Tip"><span class="dot off" id="focusDot"></span><span id="uiFocus">Нужен фокус</span></span>
+          <!-- RIGHT -->
+          <div>
+            <div class="kbShell">
+              <div class="kbTop">
+                <div>
+                  <div class="sectionTitle"><span id="uiVisual">Виртуальная клавиатура</span></div>
+                  <div class="hint" id="uiVisualHint">
+                    Подсвечиваются реальные нажатия. Для корректных тестов удобнее смотреть на <b>event.code</b> — это “физическая” клавиша.
+                  </div>
+                </div>
+                <span class="chip" title="Privacy"><span class="dot" style="background:var(--accent2);box-shadow:0 0 12px rgba(162,155,255,.35)"></span><span id="uiPrivacy">Без сервера</span></span>
+              </div>
+
+              <div class="kbdGrid" id="kbd">
+                <!-- Function row -->
+                <div class="row rFn">
+                  <div class="key" data-code="Escape">Esc</div>
+                  <div class="key" data-code="F1">F1</div>
+                  <div class="key" data-code="F2">F2</div>
+                  <div class="key" data-code="F3">F3</div>
+                  <div></div>
+                  <div class="key" data-code="F4">F4</div>
+                  <div class="key" data-code="F5">F5</div>
+                  <div class="key" data-code="F6">F6</div>
+                  <div class="key" data-code="F7">F7</div>
+                  <div></div>
+                  <div class="key" data-code="F8">F8</div>
+                  <div class="key" data-code="F9">F9</div>
+                  <div class="key" data-code="F10">F10</div>
+                  <div class="key" data-code="F11">F11</div>
+                  <div></div>
+                  <div class="key" data-code="F12">F12</div>
+                  <div class="key" data-code="PrintScreen">PrtSc</div>
+                  <div class="key" data-code="ScrollLock">ScrLk</div>
+                  <div class="key" data-code="Pause">Pause</div>
+                </div>
+
+                <!-- Row 1 -->
+                <div class="row r1">
+                  <div class="key" data-code="Backquote">`<div class="sub">~</div></div>
+                  <div class="key" data-code="Digit1">1<div class="sub">!</div></div>
+                  <div class="key" data-code="Digit2">2<div class="sub">@</div></div>
+                  <div class="key" data-code="Digit3">3<div class="sub">#</div></div>
+                  <div class="key" data-code="Digit4">4<div class="sub">$</div></div>
+                  <div class="key" data-code="Digit5">5<div class="sub">%</div></div>
+                  <div class="key" data-code="Digit6">6<div class="sub">^</div></div>
+                  <div class="key" data-code="Digit7">7<div class="sub">&</div></div>
+                  <div class="key" data-code="Digit8">8<div class="sub">*</div></div>
+                  <div class="key" data-code="Digit9">9<div class="sub">(</div></div>
+                  <div class="key" data-code="Digit0">0<div class="sub">)</div></div>
+                  <div class="key" data-code="Minus">-<div class="sub">_</div></div>
+                  <div class="key" data-code="Equal">=<div class="sub">+</div></div>
+                  <div class="key" data-code="Backspace">Backspace</div>
+                  <div></div>
+                  <!-- Nav cluster -->
+                  <div class="key" data-code="Insert">Ins</div>
+                  <div class="key" data-code="Home">Home</div>
+                  <div class="key" data-code="PageUp">PgUp</div>
+                  <div></div>
+                  <!-- Numpad top -->
+                  <div class="key" data-code="NumLock">Num</div>
+                  <div class="key" data-code="NumpadDivide">/</div>
+                  <div class="key" data-code="NumpadMultiply">*</div>
+                  <div class="key" data-code="NumpadSubtract">-</div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="row r2">
+                  <div class="key" data-code="Tab">Tab</div>
+                  <div class="key" data-code="KeyQ">Q</div>
+                  <div class="key" data-code="KeyW">W</div>
+                  <div class="key" data-code="KeyE">E</div>
+                  <div class="key" data-code="KeyR">R</div>
+                  <div class="key" data-code="KeyT">T</div>
+                  <div class="key" data-code="KeyY">Y</div>
+                  <div class="key" data-code="KeyU">U</div>
+                  <div class="key" data-code="KeyI">I</div>
+                  <div class="key" data-code="KeyO">O</div>
+                  <div class="key" data-code="KeyP">P</div>
+                  <div class="key" data-code="BracketLeft">[<div class="sub">{</div></div>
+                  <div class="key" data-code="BracketRight">]<div class="sub">}</div></div>
+                  <div class="key" data-code="Backslash">\ <div class="sub">|</div></div>
+                  <div></div>
+                  <div class="key" data-code="Delete">Del</div>
+                  <div class="key" data-code="End">End</div>
+                  <div class="key" data-code="PageDown">PgDn</div>
+                  <div></div>
+                  <div class="key" data-code="Numpad7">7<div class="sub">Home</div></div>
+                  <div class="key" data-code="Numpad8">8<div class="sub">↑</div></div>
+                  <div class="key" data-code="Numpad9">9<div class="sub">PgUp</div></div>
+                  <div class="key" data-code="NumpadAdd">+</div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="row r3">
+                  <div class="key" data-code="CapsLock">Caps</div>
+                  <div class="key" data-code="KeyA">A</div>
+                  <div class="key" data-code="KeyS">S</div>
+                  <div class="key" data-code="KeyD">D</div>
+                  <div class="key" data-code="KeyF">F</div>
+                  <div class="key" data-code="KeyG">G</div>
+                  <div class="key" data-code="KeyH">H</div>
+                  <div class="key" data-code="KeyJ">J</div>
+                  <div class="key" data-code="KeyK">K</div>
+                  <div class="key" data-code="KeyL">L</div>
+                  <div class="key" data-code="Semicolon">;<div class="sub">:</div></div>
+                  <div class="key" data-code="Quote">'<div class="sub">"</div></div>
+                  <div class="key" data-code="Enter">Enter</div>
+                  <div></div>
+                  <div></div><div></div><div></div>
+                  <div></div>
+                  <div class="key" data-code="Numpad4">4<div class="sub">←</div></div>
+                  <div class="key" data-code="Numpad5">5</div>
+                  <div class="key" data-code="Numpad6">6<div class="sub">→</div></div>
+                  <div class="key" data-code="NumpadAdd">+</div>
+                </div>
+
+                <!-- Row 4 -->
+                <div class="row r4">
+                  <div class="key" data-code="ShiftLeft">Shift</div>
+                  <div class="key" data-code="KeyZ">Z</div>
+                  <div class="key" data-code="KeyX">X</div>
+                  <div class="key" data-code="KeyC">C</div>
+                  <div class="key" data-code="KeyV">V</div>
+                  <div class="key" data-code="KeyB">B</div>
+                  <div class="key" data-code="KeyN">N</div>
+                  <div class="key" data-code="KeyM">M</div>
+                  <div class="key" data-code="Comma">,<div class="sub">&lt;</div></div>
+                  <div class="key" data-code="Period">.<div class="sub">&gt;</div></div>
+                  <div class="key" data-code="Slash">/<div class="sub">?</div></div>
+                  <div class="key" data-code="ShiftRight">Shift</div>
+                  <div></div>
+                  <div></div>
+                  <div></div><div></div><div></div>
+                  <div></div>
+                  <div class="key" data-code="Numpad1">1<div class="sub">End</div></div>
+                  <div class="key" data-code="Numpad2">2<div class="sub">↓</div></div>
+                  <div class="key" data-code="Numpad3">3<div class="sub">PgDn</div></div>
+                  <div class="key" data-code="NumpadEnter">Enter</div>
+                </div>
+
+                <!-- Row 5 (bottom) -->
+                <div class="row r6">
+                  <div class="key" data-code="ControlLeft">Ctrl</div>
+                  <div class="key" data-code="MetaLeft">Win</div>
+                  <div class="key" data-code="AltLeft">Alt</div>
+                  <div class="key" data-code="Space">Space</div>
+                  <div class="key" data-code="AltRight">Alt</div>
+                  <div class="key" data-code="MetaRight">Win</div>
+                  <div class="key" data-code="ContextMenu">Menu</div>
+
+                  <div></div>
+
+                  <!-- arrows cluster -->
+                  <div class="key" data-code="ArrowLeft">←</div>
+                  <div class="key" data-code="ArrowDown">↓</div>
+                  <div class="key" data-code="ArrowRight">→</div>
+
+                  <div></div>
+
+                  <!-- numpad bottom -->
+                  <div class="key" data-code="Numpad0">0</div>
+                  <div class="key" data-code="NumpadDecimal">.</div>
+                  <div class="key" data-code="NumpadEnter">Enter</div>
+                  <div class="key" data-code="ControlRight">Ctrl</div>
+                </div>
+              </div>
             </div>
 
-            <div class="kbWrap" id="kb" aria-label="Virtual keyboard (ANSI US layout)">
-              <div class="row r1">
-                <div class="key" data-code="Escape">Esc<div class="sub">Esc</div></div>
-                <div class="key" data-code="F1">F1</div>
-                <div class="key" data-code="F2">F2</div>
-                <div class="key" data-code="F3">F3</div>
-                <div class="key" data-code="F4">F4</div>
-                <div class="key" data-code="F5">F5</div>
-                <div class="key" data-code="F6">F6</div>
-                <div class="key" data-code="F7">F7</div>
-                <div class="key" data-code="F8">F8</div>
-                <div class="key" data-code="F9">F9</div>
-                <div class="key" data-code="F10">F10</div>
-                <div class="key" data-code="F11">F11</div>
-                <div class="key" data-code="F12">F12</div>
-                <div class="key" data-code="PrintScreen">PrtSc</div>
-              </div>
-
-              <div class="row r2">
-                <div class="key" data-code="Backquote">`<div class="sub">~</div></div>
-                <div class="key" data-code="Digit1">1<div class="sub">!</div></div>
-                <div class="key" data-code="Digit2">2<div class="sub">@</div></div>
-                <div class="key" data-code="Digit3">3<div class="sub">#</div></div>
-                <div class="key" data-code="Digit4">4<div class="sub">$</div></div>
-                <div class="key" data-code="Digit5">5<div class="sub">%</div></div>
-                <div class="key" data-code="Digit6">6<div class="sub">^</div></div>
-                <div class="key" data-code="Digit7">7<div class="sub">&</div></div>
-                <div class="key" data-code="Digit8">8<div class="sub">*</div></div>
-                <div class="key" data-code="Digit9">9<div class="sub">(</div></div>
-                <div class="key" data-code="Digit0">0<div class="sub">)</div></div>
-                <div class="key" data-code="Minus">-<div class="sub">_</div></div>
-                <div class="key" data-code="Equal">=<div class="sub">+</div></div>
-                <div class="key" data-code="Backspace">Backspace</div>
-              </div>
-
-              <div class="row r3">
-                <div class="key" data-code="Tab">Tab</div>
-                <div class="key" data-code="KeyQ">Q</div>
-                <div class="key" data-code="KeyW">W</div>
-                <div class="key" data-code="KeyE">E</div>
-                <div class="key" data-code="KeyR">R</div>
-                <div class="key" data-code="KeyT">T</div>
-                <div class="key" data-code="KeyY">Y</div>
-                <div class="key" data-code="KeyU">U</div>
-                <div class="key" data-code="KeyI">I</div>
-                <div class="key" data-code="KeyO">O</div>
-                <div class="key" data-code="KeyP">P</div>
-                <div class="key" data-code="BracketLeft">[<div class="sub">{</div></div>
-                <div class="key" data-code="BracketRight">]<div class="sub">}</div></div>
-                <div class="key" data-code="Backslash">\ <div class="sub">|</div></div>
-              </div>
-
-              <div class="row r4">
-                <div class="key" data-code="CapsLock">Caps</div>
-                <div class="key" data-code="KeyA">A</div>
-                <div class="key" data-code="KeyS">S</div>
-                <div class="key" data-code="KeyD">D</div>
-                <div class="key" data-code="KeyF">F</div>
-                <div class="key" data-code="KeyG">G</div>
-                <div class="key" data-code="KeyH">H</div>
-                <div class="key" data-code="KeyJ">J</div>
-                <div class="key" data-code="KeyK">K</div>
-                <div class="key" data-code="KeyL">L</div>
-                <div class="key" data-code="Semicolon">;<div class="sub">:</div></div>
-                <div class="key" data-code="Quote">'<div class="sub">"</div></div>
-                <div class="key" data-code="Enter">Enter</div>
-              </div>
-
-              <div class="row r5">
-                <div class="key" data-code="ShiftLeft">Shift</div>
-                <div class="key" data-code="KeyZ">Z</div>
-                <div class="key" data-code="KeyX">X</div>
-                <div class="key" data-code="KeyC">C</div>
-                <div class="key" data-code="KeyV">V</div>
-                <div class="key" data-code="KeyB">B</div>
-                <div class="key" data-code="KeyN">N</div>
-                <div class="key" data-code="KeyM">M</div>
-                <div class="key" data-code="Comma">,<div class="sub">&lt;</div></div>
-                <div class="key" data-code="Period">.<div class="sub">&gt;</div></div>
-                <div class="key" data-code="Slash">/<div class="sub">?</div></div>
-                <div class="key" data-code="ShiftRight">Shift</div>
-              </div>
-
-              <div class="row r6">
-                <div class="key" data-code="ControlLeft">Ctrl</div>
-                <div class="key" data-code="MetaLeft">Win</div>
-                <div class="key" data-code="AltLeft">Alt</div>
-                <div class="key" data-code="Space">Space</div>
-                <div class="key" data-code="AltRight">Alt</div>
-                <div class="key" data-code="MetaRight">Win</div>
-                <div class="key" data-code="ControlRight">Ctrl</div>
-              </div>
-            </div>
-
-            <div style="height:12px"></div>
+            <div style="height:14px"></div>
 
             <div class="panel">
               <div class="sectionTitle">
-                <span id="uiHistory">История нажатий</span>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <span id="uiHistory">История</span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
                   <button class="btn" id="btnCopy"><span id="uiCopy">Копировать</span></button>
-                  <button class="btn" id="btnCSV"><span id="uiExport">Экспорт CSV</span></button>
+                  <button class="btn" id="btnCSV"><span id="uiCSV">Экспорт CSV</span></button>
                   <button class="btn" id="btnClear"><span id="uiClear">Очистить</span></button>
                 </div>
               </div>
 
-              <div class="log" id="log">
-                <div class="empty" id="logEmpty">Сделай пару нажатий — они появятся здесь.</div>
-              </div>
+              <div class="log" id="log"><div class="empty" id="logEmpty">Сделай пару нажатий — они появятся здесь.</div></div>
 
               <div class="footer">
-                <span id="uiPrivacy">Конфиденциальность: данные не отправляются на сервер.</span>
+                <span id="uiFooter">Конфиденциальность: ничего не отправляется на сервер.</span>
                 <span><a href="#" id="focusLink">Focus</a> · <a href="#" id="topLink">Top</a></span>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </section>
 
     <!-- SIDE -->
     <aside class="card">
       <div class="inner">
-        <div class="sectionTitle"><span id="uiGuideTitle">Как это использовать</span></div>
-        <p class="note" id="uiGuideText">
-          <b>Для обычной проверки</b>: просто нажимай клавиши и смотри подсветку справа.<br/>
-          <b>Для сочетаний</b>: зажимай несколько кнопок — список “Сейчас зажаты” покажет, что реально удерживается.<br/>
-          <b>Для ghosting теста</b>: удерживай 6–10 клавиш в одном блоке (буквы/ряд цифр) и смотри максимальное значение.
-        </p>
+        <div class="sectionTitle"><span id="uiSideTitle">Сделано как продукт</span></div>
+        <div class="hint" id="uiSideText">
+          <b>1)</b> Включи фокус (клик по карточке).<br/>
+          <b>2)</b> Проверь все клавиши — подсветка покажет, что реально ловит браузер.<br/>
+          <b>3)</b> Для игр смотри <b>event.code</b> — это физическая клавиша, не символ.<br/>
+          <b>4)</b> Для ghosting зажимай много клавиш сразу и смотри максимум.
+        </div>
 
         <div style="height:14px"></div>
 
-        <div class="sectionTitle"><span id="uiFieldsTitle">Что значат поля</span></div>
-        <ul class="note" style="line-height:1.55; padding-left: 18px;" id="uiFieldsList">
-          <li><b>event.key</b> — “символ/название” (Enter, a, ü…)</li>
-          <li><b>event.code</b> — “физическое место” (важно для игр)</li>
-          <li><b>keyCode</b> — старое поле для старых приложений</li>
-          <li><b>Расположение</b> — левая/правая/numPad</li>
-        </ul>
+        <div class="panel">
+          <div class="sectionTitle"><span id="uiPro">Фишки</span></div>
+          <div class="hint" id="uiProText">
+            • Полный layout: стрелки + навигационный блок + numpad<br/>
+            • Capture Mode (меньше мешают хоткеи/прокрутка)<br/>
+            • Экспорт CSV и копирование истории<br/>
+            • PWA: установка как приложение
+          </div>
+        </div>
 
         <div style="height:14px"></div>
 
-        <div class="sectionTitle"><span id="uiProTitle">Фишки продукта</span></div>
-        <ul class="note" style="line-height:1.55; padding-left: 18px;" id="uiProList">
-          <li>Подсветка клавиш + лог событий</li>
-          <li>Rollover/ghosting тест</li>
-          <li>Экспорт истории в CSV</li>
-          <li>RU/EN, Light/Dark, Capture mode</li>
-        </ul>
-
-        <div style="height:14px"></div>
-
-        <div class="sectionTitle"><span id="uiTipTitle">Лайфхак</span></div>
-        <p class="note" id="uiTipText">
-          Если клавиши “залипли” после переключения окна — нажми <b>Сброс</b> или кликни на страницу, затем отпусти всё.
-        </p>
+        <div class="panel">
+          <div class="sectionTitle"><span id="uiBrand">Брендинг</span></div>
+          <div class="hint">
+            Если хочешь — добавим логотип, иконки, короткий домен и страницу /about.
+          </div>
+        </div>
       </div>
     </aside>
   </div>
@@ -745,17 +786,14 @@
   <div class="toast" id="toast" role="status" aria-live="polite">
     <span>✅</span><span id="toastText">Готово</span>
   </div>
-
-  <div class="sr" id="srStatus" aria-live="polite"></div>
+  <div class="sr" id="sr" aria-live="polite"></div>
 
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
 
-  const app = $("app");
-  const mainCard = $("mainCard");
-
-  const bigKey = $("bigKey");
+  const main = $("main");
+  const cap = $("cap");
   const mKey = $("mKey");
   const mCode = $("mCode");
   const mKeyCode = $("mKeyCode");
@@ -765,16 +803,14 @@
   const modAlt = $("modAlt");
   const modShift = $("modShift");
   const modMeta = $("modMeta");
+  const modCaps = $("modCaps");
+  const modNum = $("modNum");
 
   const pressedNow = $("pressedNow");
-  const btnClearPressed = $("btnClearPressed");
+  const simNow = $("simNow");
+  const simMax = $("simMax");
 
-  const simulNow = $("simulNow");
-  const simulMax = $("simulMax");
-
-  const log = $("log");
-  const logEmpty = $("logEmpty");
-
+  const btnReset = $("btnReset");
   const btnClear = $("btnClear");
   const btnCopy = $("btnCopy");
   const btnCSV = $("btnCSV");
@@ -786,9 +822,14 @@
   const dot = $("dot");
   const focusDot = $("focusDot");
 
+  const btnInstall = $("btnInstall");
+
+  const log = $("log");
+  const logEmpty = $("logEmpty");
+
   const toast = $("toast");
   const toastText = $("toastText");
-  const srStatus = $("srStatus");
+  const sr = $("sr");
 
   const focusLink = $("focusLink");
   const topLink = $("topLink");
@@ -798,127 +839,115 @@
 
   // State
   let captureMode = true;
+  let maxSim = 0;
   let lang = localStorage.getItem("kb_lang") || "ru";
   let theme = localStorage.getItem("kb_theme") || "dark";
-  const pressed = new Set(); // store codes
+
+  const pressed = new Set(); // store code strings
+  const sticky = new Set();  // "stuck" detector if no keyup received
   const logData = [];
-  const LOG_LIMIT = 40;
-  let maxSimul = 0;
+  const LOG_LIMIT = 45;
 
   const i18n = {
     ru: {
       title: "Тестер клавиатуры",
-      sub: "Подсветка клавиш, история нажатий и тест одновременных нажатий (rollover/ghosting). Никаких данных на сервер — всё работает локально в браузере.",
+      sub: "Визуальная клавиатура (стрелки + numpad), история, экспорт, ghosting/rollover тест. Всё работает локально в браузере.",
       live: "Live",
+      install: "Установить",
       captureOn: "Capture: ON",
       captureOff: "Capture: OFF",
       share: "Ссылка",
-      currentKey: "Текущая клавиша",
-      quick: "Быстро",
-      quickHelp: "Кликни по карточке и нажимай клавиши. Для сочетаний зажимай несколько кнопок. Если мешают браузерные хоткеи — включи/выключи Capture Mode.",
-      location: "Расположение",
+      current: "Текущая клавиша",
+      howFast: "Как пользоваться",
+      focus: "Нужен фокус",
+      hint: "Кликни по карточке и нажимай клавиши — справа будет подсветка. Для сочетаний удерживай несколько кнопок. Если браузер мешает хоткеями — включи <b>Capture Mode</b>.",
+      loc: "Расположение",
       mods: "Модификаторы:",
-      pressedNow: "Сейчас зажаты",
+      pressed: "Сейчас зажаты",
       reset: "Сброс",
-      rollover: "Rollover / Ghosting тест",
-      simulNow: "Сейчас одновременно",
-      simulMax: "Максимум за сессию",
-      rolloverHint: "Зажми много букв одновременно (например, ASDFJKL;) и смотри счётчик. Если некоторые клавиши «пропадают» — это ограничение клавиатуры (ghosting).",
+      ghost: "Rollover / Ghosting тест",
+      simNow: "Сейчас одновременно",
+      simMax: "Максимум за сессию",
+      ghostHint: "Зажми 6–10 клавиш (например, ASDFJKL;) и смотри счётчик. Если часть клавиш «не зажимается» — это ограничение клавиатуры (ghosting).",
       visual: "Виртуальная клавиатура",
-      needFocus: "Нужен фокус",
-      history: "История нажатий",
+      visualHint: "Подсвечиваются реальные нажатия. Для корректных тестов удобнее смотреть на <b>event.code</b> — это “физическая” клавиша.",
+      privacy: "Без сервера",
+      history: "История",
       copy: "Копировать",
-      export: "Экспорт CSV",
+      csv: "Экспорт CSV",
       clear: "Очистить",
       empty: "Сделай пару нажатий — они появятся здесь.",
-      privacy: "Конфиденциальность: данные не отправляются на сервер.",
-      guideTitle: "Как это использовать",
-      guideText: "<b>Для обычной проверки</b>: просто нажимай клавиши и смотри подсветку справа.<br/><b>Для сочетаний</b>: зажимай несколько кнопок — список “Сейчас зажаты” покажет, что реально удерживается.<br/><b>Для ghosting теста</b>: удерживай 6–10 клавиш в одном блоке (буквы/ряд цифр) и смотри максимальное значение.",
-      fieldsTitle: "Что значат поля",
-      proTitle: "Фишки продукта",
-      tipTitle: "Лайфхак",
-      tipText: "Если клавиши “залипли” после переключения окна — нажми <b>Сброс</b> или кликни на страницу, затем отпусти всё.",
+      footer: "Конфиденциальность: ничего не отправляется на сервер.",
+      sideTitle: "Сделано как продукт",
+      sideText: "<b>1)</b> Включи фокус (клик по карточке).<br/><b>2)</b> Проверь все клавиши — подсветка покажет, что реально ловит браузер.<br/><b>3)</b> Для игр смотри <b>event.code</b> — это физическая клавиша, не символ.<br/><b>4)</b> Для ghosting зажимай много клавиш сразу и смотри максимум.",
+      pro: "Фишки",
+      proText: "• Полный layout: стрелки + навигационный блок + numpad<br/>• Capture Mode (меньше мешают хоткеи/прокрутка)<br/>• Экспорт CSV и копирование истории<br/>• PWA: установка как приложение",
       toastCopied: "Скопировано ✅",
       toastLink: "Ссылка скопирована ✅",
       toastCSV: "CSV скачан ✅",
       toastCleared: "Очищено ✅",
-      toastReset: "Сброшено ✅"
+      toastReset: "Сброшено ✅",
+      capEmpty: "Нажми любую клавишу",
+      locStd: "Обычное",
+      locL: "Левая",
+      locR: "Правая",
+      locN: "Numpad",
     },
     en: {
       title: "Keyboard Tester",
-      sub: "Key highlighting, event history and rollover/ghosting test. No data is sent anywhere — everything runs locally in your browser.",
+      sub: "Visual keyboard (arrows + numpad), history, export, and ghosting/rollover test. Runs locally in your browser.",
       live: "Live",
+      install: "Install",
       captureOn: "Capture: ON",
       captureOff: "Capture: OFF",
       share: "Link",
-      currentKey: "Current key",
-      quick: "Quick help",
-      quickHelp: "Click the card and press any keys. Hold multiple keys for combos. If browser shortcuts interfere — toggle Capture Mode.",
-      location: "Location",
+      current: "Current key",
+      howFast: "How to use",
+      focus: "Need focus",
+      hint: "Click the card and press keys — the keyboard highlights them. Hold multiple keys for combos. If browser shortcuts interfere — toggle <b>Capture Mode</b>.",
+      loc: "Location",
       mods: "Modifiers:",
-      pressedNow: "Pressed now",
+      pressed: "Pressed now",
       reset: "Reset",
-      rollover: "Rollover / Ghosting test",
-      simulNow: "Simultaneous now",
-      simulMax: "Session max",
-      rolloverHint: "Hold many keys (e.g., ASDFJKL;) and watch the counter. If some keys disappear — that’s keyboard ghosting / rollover limits.",
+      ghost: "Rollover / Ghosting test",
+      simNow: "Simultaneous now",
+      simMax: "Session max",
+      ghostHint: "Hold 6–10 keys (e.g., ASDFJKL;) and watch the counter. Missing keys = ghosting/rollover limits.",
       visual: "Visual keyboard",
-      needFocus: "Need focus",
+      visualHint: "Highlights real presses. For games, <b>event.code</b> is the physical key location.",
+      privacy: "No server",
       history: "History",
       copy: "Copy",
-      export: "Export CSV",
+      csv: "Export CSV",
       clear: "Clear",
       empty: "Press a few keys — they will appear here.",
-      privacy: "Privacy: nothing is sent to a server.",
-      guideTitle: "How to use",
-      guideText: "<b>Basic check</b>: press keys and watch highlights.<br/><b>Combos</b>: hold multiple keys — “Pressed now” shows what is truly held.<br/><b>Ghosting</b>: hold 6–10 keys in the same area and watch max.",
-      fieldsTitle: "Field meanings",
-      proTitle: "Product features",
-      tipTitle: "Tip",
-      tipText: "If keys look stuck after switching tabs — press <b>Reset</b> or click the page and release everything.",
+      footer: "Privacy: nothing is sent to a server.",
+      sideTitle: "Built like a product",
+      sideText: "<b>1)</b> Focus the tester (click the card).<br/><b>2)</b> Press keys — highlights show what the browser receives.<br/><b>3)</b> For games, use <b>event.code</b> (physical key).<br/><b>4)</b> For ghosting, hold many keys and watch the max.",
+      pro: "Features",
+      proText: "• Full layout: arrows + nav cluster + numpad<br/>• Capture Mode (less scrolling/shortcuts issues)<br/>• CSV export & copy history<br/>• PWA installable app",
       toastCopied: "Copied ✅",
       toastLink: "Link copied ✅",
       toastCSV: "CSV downloaded ✅",
       toastCleared: "Cleared ✅",
-      toastReset: "Reset ✅"
+      toastReset: "Reset ✅",
+      capEmpty: "Press any key",
+      locStd: "Standard",
+      locL: "Left",
+      locR: "Right",
+      locN: "Numpad",
     }
   };
 
-  function setText(id, text){ const el = $(id); if(el) el.textContent = text; }
-  function setHTML(id, html){ const el = $(id); if(el) el.innerHTML = html; }
+  function setText(id, v){ const el = $(id); if(el) el.textContent = v; }
+  function setHTML(id, v){ const el = $(id); if(el) el.innerHTML = v; }
 
-  function applyLang(){
-    const t = i18n[lang];
-    setText("uiTitle", t.title);
-    setText("uiSub", t.sub);
-    setText("uiLive", t.live);
-    setText("uiCurrentKeyLabel", t.currentKey);
-    setText("uiQuickHelpTitle", t.quick);
-    setHTML("uiQuickHelp", t.quickHelp);
-    setText("uiLocation", t.location);
-    setText("uiMods", t.mods);
-    setText("uiPressedNow", t.pressedNow);
-    setText("uiReset", t.reset);
-    setText("uiRollover", t.rollover);
-    setText("uiSimulNow", t.simulNow);
-    setText("uiSimulMax", t.simulMax);
-    setHTML("uiRolloverHint", t.rolloverHint);
-    setText("uiVisualKeyboard", t.visual);
-    setText("uiFocus", t.needFocus);
-    setText("uiHistory", t.history);
-    setText("uiCopy", t.copy);
-    setText("uiExport", t.export);
-    setText("uiClear", t.clear);
-    setText("logEmpty", t.empty);
-    setText("uiPrivacy", t.privacy);
-    setText("uiGuideTitle", t.guideTitle);
-    setHTML("uiGuideText", t.guideText);
-    setText("uiFieldsTitle", t.fieldsTitle);
-    setText("uiProTitle", t.proTitle);
-    setText("uiTipTitle", t.tipTitle);
-    setHTML("uiTipText", t.tipText);
-    $("btnLang").textContent = lang.toUpperCase();
-    updateCaptureBtn();
+  function toastShow(text){
+    toastText.textContent = text;
+    toast.classList.add("show");
+    sr.textContent = text;
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>toast.classList.remove("show"), 1400);
   }
 
   function applyTheme(){
@@ -927,45 +956,23 @@
     localStorage.setItem("kb_theme", theme);
   }
 
-  function toastShow(text){
-    toastText.textContent = text;
-    toast.classList.add("show");
-    srStatus.textContent = text;
-    clearTimeout(toast._t);
-    toast._t = setTimeout(()=>toast.classList.remove("show"), 1400);
-  }
-
-  function updateCaptureBtn(){
-    const t = i18n[lang];
-    setText("uiCapture", captureMode ? t.captureOn : t.captureOff);
-    dot.classList.toggle("off", !captureMode);
-  }
-
-  function escapeHtml(str){
-    return String(str)
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
+  function updateCapture(){
+    setText("uiCapture", captureMode ? i18n[lang].captureOn : i18n[lang].captureOff);
+    dot.style.opacity = captureMode ? "1" : ".75";
   }
 
   function locText(loc){
-    if(lang === "en"){
-      if(loc === 1) return "Left";
-      if(loc === 2) return "Right";
-      if(loc === 3) return "Numpad";
-      return "Standard";
-    } else {
-      if(loc === 1) return "Левая";
-      if(loc === 2) return "Правая";
-      if(loc === 3) return "Numpad";
-      return "Обычное";
-    }
+    const t = i18n[lang];
+    if(loc === 1) return t.locL;
+    if(loc === 2) return t.locR;
+    if(loc === 3) return t.locN;
+    return t.locStd;
   }
 
-  function setFocusState(hasFocus){
-    focusDot.classList.toggle("off", !hasFocus);
-    focusDot.style.background = hasFocus ? "var(--good)" : "var(--warn)";
-    focusDot.style.boxShadow = hasFocus ? "0 0 12px rgba(85,239,196,.55)" : "0 0 12px rgba(255,234,167,.45)";
+  function setFocusState(){
+    const hasFocus = document.activeElement === main;
+    focusDot.classList.toggle("warn", !hasFocus);
+    setText("uiFocus", i18n[lang].focus);
   }
 
   function setMods(e){
@@ -973,21 +980,11 @@
     modAlt.classList.toggle("on", !!e.altKey);
     modShift.classList.toggle("on", !!e.shiftKey);
     modMeta.classList.toggle("on", !!e.metaKey);
-  }
-
-  function updatePressedText(){
-    if(!pressed.size){
-      pressedNow.textContent = "—";
-      simulNow.textContent = "0";
-      return;
-    }
-    const list = Array.from(pressed).sort();
-    pressedNow.textContent = list.join(" + ");
-    simulNow.textContent = String(pressed.size);
-    if(pressed.size > maxSimul){
-      maxSimul = pressed.size;
-      simulMax.textContent = String(maxSimul);
-    }
+    // Caps/Num are special: rely on getModifierState when available
+    try{
+      modCaps.classList.toggle("on", !!e.getModifierState && e.getModifierState("CapsLock"));
+      modNum.classList.toggle("on", !!e.getModifierState && e.getModifierState("NumLock"));
+    }catch{}
   }
 
   function highlight(code, on){
@@ -997,15 +994,28 @@
 
   function setMain(e){
     const display = (e.key === " ") ? "Space" : e.key;
-    bigKey.textContent = display;
-    bigKey.classList.remove("empty");
-
+    cap.textContent = display;
+    cap.classList.remove("small");
     mKey.textContent = String(e.key);
     mCode.textContent = String(e.code);
     mKeyCode.textContent = String(e.keyCode);
     mLoc.textContent = locText(e.location);
-
     setMods(e);
+  }
+
+  function updatePressedText(){
+    if(!pressed.size){
+      pressedNow.textContent = "—";
+      simNow.textContent = "0";
+      return;
+    }
+    const list = Array.from(pressed).sort();
+    pressedNow.textContent = list.join(" + ");
+    simNow.textContent = String(pressed.size);
+    if(pressed.size > maxSim){
+      maxSim = pressed.size;
+      simMax.textContent = String(maxSim);
+    }
   }
 
   function addLog(e){
@@ -1028,10 +1038,16 @@
       ].filter(Boolean).join(" + ") || "—",
       type: e.type
     };
-
     logData.unshift(item);
     if(logData.length > LOG_LIMIT) logData.length = LOG_LIMIT;
     renderLog();
+  }
+
+  function escapeHtml(str){
+    return String(str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
   }
 
   function renderLog(){
@@ -1042,8 +1058,8 @@
     log.innerHTML = logData.map(x => `
       <div class="logRow">
         <div class="logLeft">
-          <span class="pillKey">${escapeHtml(x.key)}</span>
-          <span class="pillKey">${escapeHtml(x.code)}</span>
+          <span class="pill">${escapeHtml(x.key)}</span>
+          <span class="pill">${escapeHtml(x.code)}</span>
         </div>
         <div class="logMeta">${escapeHtml(x.time)} · keyCode:${escapeHtml(String(x.keyCode))} · ${escapeHtml(x.mods)}</div>
       </div>
@@ -1053,20 +1069,21 @@
   function maybePreventDefaults(e){
     if(!captureMode) return;
 
-    // Prevent scrolling / page jump keys (still allows most browser shortcuts if user insists)
-    const block = new Set([" ", "Spacebar", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End"]);
-    if(block.has(e.key)) e.preventDefault();
-
-    // If user is holding Ctrl/Meta, do NOT block (so they can refresh/close tab if needed)
+    // keep Ctrl/Meta shortcuts usable (refresh, new tab, etc.)
     if(e.ctrlKey || e.metaKey) return;
 
-    // Prevent accidental focus shift with Tab inside tester
+    const block = new Set([
+      " ", "Spacebar",
+      "ArrowUp","ArrowDown","ArrowLeft","ArrowRight",
+      "PageUp","PageDown","Home","End"
+    ]);
+    if(block.has(e.key)) e.preventDefault();
     if(e.key === "Tab") e.preventDefault();
   }
 
   function onDown(e){
-    setFocusState(document.activeElement === mainCard);
-    if(document.activeElement !== mainCard) return;
+    setFocusState();
+    if(document.activeElement !== main) return;
 
     maybePreventDefaults(e);
     setMain(e);
@@ -1075,17 +1092,19 @@
     if(!pressed.has(code)){
       pressed.add(code);
       highlight(code, true);
+      sticky.add(code);
       updatePressedText();
     }
     if(!e.repeat) addLog(e);
   }
 
   function onUp(e){
-    if(document.activeElement !== mainCard) return;
+    if(document.activeElement !== main) return;
 
     const code = e.code || String(e.keyCode) || e.key;
     if(pressed.has(code)){
       pressed.delete(code);
+      sticky.delete(code);
       highlight(code, false);
       updatePressedText();
     }
@@ -1095,11 +1114,20 @@
   function resetAll(){
     for(const code of pressed) highlight(code, false);
     pressed.clear();
+    sticky.clear();
     updatePressedText();
+    cap.textContent = i18n[lang].capEmpty;
+    cap.classList.add("small");
+    mKey.textContent = "—";
+    mCode.textContent = "—";
+    mKeyCode.textContent = "—";
+    mLoc.textContent = "—";
     modCtrl.classList.remove("on");
     modAlt.classList.remove("on");
     modShift.classList.remove("on");
     modMeta.classList.remove("on");
+    modCaps.classList.remove("on");
+    modNum.classList.remove("on");
     toastShow(i18n[lang].toastReset);
   }
 
@@ -1124,7 +1152,48 @@
     toastShow(i18n[lang].toastCSV);
   }
 
-  // UI bindings
+  function applyLang(){
+    const t = i18n[lang];
+    setText("uiTitle", t.title);
+    setText("uiSub", t.sub);
+    setText("uiLive", t.live);
+    setText("uiInstall", t.install);
+    setText("uiShare", t.share);
+    setText("uiCurrent", t.current);
+    setText("uiHowFast", t.howFast);
+    setHTML("uiHint", t.hint);
+    setText("uiLoc", t.loc);
+    setText("uiMods", t.mods);
+    setText("uiPressed", t.pressed);
+    setText("uiReset", t.reset);
+    setText("uiGhost", t.ghost);
+    setText("uiSimNow", t.simNow);
+    setText("uiSimMax", t.simMax);
+    setText("uiGhostHint", t.ghostHint);
+    setText("uiVisual", t.visual);
+    setHTML("uiVisualHint", t.visualHint);
+    setText("uiPrivacy", t.privacy);
+    setText("uiHistory", t.history);
+    setText("uiCopy", t.copy);
+    setText("uiCSV", t.csv);
+    setText("uiClear", t.clear);
+    setText("logEmpty", t.empty);
+    setText("uiFooter", t.footer);
+    setText("uiSideTitle", t.sideTitle);
+    setHTML("uiSideText", t.sideText);
+    setText("uiPro", t.pro);
+    setHTML("uiProText", t.proText);
+
+    btnLang.textContent = lang.toUpperCase();
+    updateCapture();
+
+    if(!pressed.size){
+      cap.textContent = t.capEmpty;
+      cap.classList.add("small");
+    }
+  }
+
+  // UI
   btnTheme.addEventListener("click", () => {
     theme = (theme === "dark") ? "light" : "dark";
     applyTheme();
@@ -1139,10 +1208,10 @@
 
   btnCapture.addEventListener("click", () => {
     captureMode = !captureMode;
-    updateCaptureBtn();
+    updateCapture();
   });
 
-  btnClearPressed.addEventListener("click", resetAll);
+  btnReset.addEventListener("click", resetAll);
 
   btnClear.addEventListener("click", () => {
     logData.length = 0;
@@ -1157,7 +1226,6 @@
       await copyText(txt);
       toastShow(i18n[lang].toastCopied);
     }catch{
-      // fallback
       const ta = document.createElement("textarea");
       ta.value = txt;
       document.body.appendChild(ta);
@@ -1172,21 +1240,30 @@
 
   btnShare.addEventListener("click", async () => {
     const url = location.href.split("#")[0];
-    try{
-      await copyText(url);
-      toastShow(i18n[lang].toastLink);
-    }catch{
-      toastShow(url);
-    }
+    try{ await copyText(url); toastShow(i18n[lang].toastLink); }
+    catch{ toastShow(url); }
   });
 
-  focusLink.addEventListener("click", (e) => { e.preventDefault(); mainCard.focus({preventScroll:true}); });
-  topLink.addEventListener("click", (e) => { e.preventDefault(); window.scrollTo({top:0, behavior:"smooth"}); });
+  focusLink.addEventListener("click",(e)=>{e.preventDefault(); main.focus({preventScroll:true});});
+  topLink.addEventListener("click",(e)=>{e.preventDefault(); window.scrollTo({top:0,behavior:"smooth"});});
 
-  // Focus behavior
-  mainCard.addEventListener("click", () => mainCard.focus({preventScroll:true}));
-  window.addEventListener("focus", () => setFocusState(document.activeElement === mainCard));
-  window.addEventListener("blur", () => { setFocusState(false); resetAll(); });
+  main.addEventListener("click", ()=>main.focus({preventScroll:true}));
+
+  // Sticky detector: if window loses focus, mark keys as sticky until reset
+  window.addEventListener("blur", () => {
+    // mark currently pressed as potentially sticky
+    for(const code of pressed){
+      const el = keyByCode.get(code);
+      if(el) el.classList.add("sticky");
+    }
+  });
+  window.addEventListener("focus", () => {
+    // remove sticky outline when user continues (real keyup may never come)
+    for(const code of sticky){
+      const el = keyByCode.get(code);
+      if(el) el.classList.remove("sticky");
+    }
+  });
 
   // Key listeners
   window.addEventListener("keydown", onDown, {passive:false});
@@ -1196,11 +1273,32 @@
   applyTheme();
   applyLang();
   renderLog();
-  setFocusState(false);
-  updateCaptureBtn();
-  mainCard.focus({preventScroll:true});
+  main.focus({preventScroll:true});
+  setFocusState();
+
+  // Service Worker
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  }
+
+  // PWA install
+  let deferredPrompt = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    btnInstall.style.display = "inline-flex";
+  });
+
+  btnInstall.addEventListener("click", async () => {
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    btnInstall.style.display = "none";
+  });
 
 })();
 </script>
 </body>
 </html>
+
