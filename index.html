@@ -3,52 +3,699 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Тест клавиатуры</title>
+  <title>Keyboard Tester — Проверка клавиатуры</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 24px; }
-    .box { padding: 16px; border: 2px dashed #888; border-radius: 12px; }
-    .row { margin: 10px 0; font-size: 18px; }
-    code { background: #f2f2f2; padding: 2px 6px; border-radius: 6px; }
-    .hint { color: #555; }
+    :root {
+      --bg: #050509;
+      --bg-card: #11121a;
+      --bg-soft: #1a1b26;
+      --accent: #6c5ce7;
+      --accent-soft: rgba(108, 92, 231, 0.18);
+      --text-main: #f5f5f7;
+      --text-muted: #a0a3b1;
+      --border: #2b2e3b;
+      --danger: #ff7675;
+      --success: #55efc4;
+      --shadow-soft: 0 24px 60px rgba(0, 0, 0, 0.65);
+      --radius-lg: 18px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #161827 0, #050509 40%, #020308 100%);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1120px;
+      display: grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-soft);
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -120px;
+      background: radial-gradient(circle at top left, rgba(108, 92, 231, 0.13), transparent 55%);
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      max-width: 480px;
+      line-height: 1.4;
+    }
+
+    .pill {
+      font-size: 12px;
+      padding: 6px 11px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255,255,255,0.09);
+      background: linear-gradient(to right, rgba(108, 92, 231, 0.24), rgba(0,0,0,0.2));
+      color: #fefefe;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2ecc71;
+      box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+    }
+
+    .main-key-box {
+      margin-top: 16px;
+      margin-bottom: 18px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.04);
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.04), rgba(2,2,4,0.9));
+      padding: 16px 18px 18px;
+    }
+
+    .main-key-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .main-key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 120px;
+      padding: 18px 22px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.45);
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.75);
+    }
+
+    .main-key.empty {
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+      text-transform: none;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .meta-item {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meta-item span:first-child {
+      opacity: 0.9;
+    }
+
+    code.badge {
+      background: #111319;
+      border-radius: 10px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fefefe;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mods-line {
+      margin-top: 12px;
+      font-size: 13px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .kbd {
+      background: #181b26;
+      border-radius: 6px;
+      padding: 4px 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .kbd.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(108, 92, 231, 0.75);
+    }
+
+    .hint {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .hint b {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .pressed-section, .log-section {
+      margin-top: 16px;
+      background: rgba(3, 4, 10, 0.92);
+      border-radius: 14px;
+      border: 1px dashed rgba(255,255,255,0.07);
+      padding: 12px 14px;
+    }
+
+    .section-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .pressed-keys {
+      min-height: 24px;
+      font-size: 13px;
+      color: var(--text-main);
+    }
+
+    .pressed-keys.empty {
+      color: var(--text-muted);
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .log-list {
+      max-height: 220px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.35;
+      padding-right: 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.3) transparent;
+    }
+
+    .log-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .log-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .log-list::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.3);
+      border-radius: 999px;
+    }
+
+    .log-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .log-left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .log-key {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .log-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .log-empty {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 4px 0;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      outline: none;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,0.09);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: #ffffff;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-small {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.72);
+      padding: 16px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-small::before {
+      content: "";
+      position: absolute;
+      inset: -120px;
+      background: radial-gradient(circle at top right, rgba(108, 92, 231, 0.19), transparent 55%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .card-small-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .small-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .small-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .small-list {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .small-list li {
+      margin-left: 18px;
+      margin-bottom: 4px;
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    a {
+      color: #a29bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-  <h1>Тест клавиатуры</h1>
-  <div class="box" tabindex="0" id="zone">
-    <div class="row">Нажатая клавиша: <code id="key">—</code></div>
-    <div class="row">Код (event.code): <code id="code">—</code></div>
-    <div class="row">KeyCode (устар., но иногда нужен): <code id="keyCode">—</code></div>
-    <div class="row">Ctrl / Alt / Shift: <code id="mods">—</code></div>
-    <div class="row hint">Кликни сюда и нажимай любые клавиши 🙂</div>
-  </div>
+  <main class="container" tabindex="-1" id="pageRoot">
+    <!-- Основная карточка -->
+    <section class="card" id="focusZone">
+      <div class="card-inner">
+        <header class="card-header">
+          <div>
+            <h1 class="title">Тест клавиатуры</h1>
+            <p class="subtitle">
+              Нажимай любые клавиши — здесь видно, что реально получает браузер.
+              Удобно для проверки: работает ли каждая кнопка, не залипают ли клавиши
+              и как называются коды для настройки игр или софта.
+            </p>
+          </div>
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span>Live check</span>
+          </div>
+        </header>
+
+        <div class="main-key-box">
+          <div class="main-key-label">Текущая клавиша</div>
+          <div class="main-key empty" id="mainKey">Нажми любую клавишу</div>
+
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span>event.key</span>
+              <code class="badge" id="metaKey">—</code>
+            </div>
+            <div class="meta-item">
+              <span>event.code</span>
+              <code class="badge" id="metaCode">—</code>
+            </div>
+            <div class="meta-item">
+              <span>keyCode</span>
+              <code class="badge" id="metaKeyCode">—</code>
+            </div>
+            <div class="meta-item">
+              <span>Расположение</span>
+              <code class="badge" id="metaLocation">—</code>
+            </div>
+          </div>
+
+          <div class="mods-line">
+            <span>Модификаторы:</span>
+            <span class="kbd" id="modCtrl">Ctrl</span>
+            <span class="kbd" id="modAlt">Alt</span>
+            <span class="kbd" id="modShift">Shift</span>
+            <span class="kbd" id="modMeta">Win / ⌘</span>
+          </div>
+
+          <p class="hint">
+            <b>Подсказка:</b> кликни в любое место страницы (или по этой карточке) и просто
+            начинай нажимать кнопки. Для проверки сочетаний зажимай сразу несколько клавиш.
+          </p>
+        </div>
+
+        <section class="pressed-section">
+          <div class="section-title">Сейчас зажаты</div>
+          <div class="pressed-keys empty" id="pressedKeys">Ничего не нажато.</div>
+        </section>
+
+        <section class="log-section">
+          <div class="log-header">
+            <div class="section-title">История нажатий (последние 25)</div>
+            <button class="btn" id="clearLogBtn">Очистить</button>
+          </div>
+          <div class="log-list" id="logList">
+            <div class="log-empty">Сделай пару нажатий — они появятся здесь.</div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Правая колонка: объяснения -->
+    <aside class="sidebar" aria-label="Пояснения и инструкции">
+      <section class="card-small">
+        <div class="card-small-inner">
+          <h2 class="small-title">Как пользоваться</h2>
+          <p class="small-text">
+            Этот тест показывает <b>реальные данные</b> от браузера:
+            символ нажатой клавиши, её код, старый keyCode и модификаторы.
+          </p>
+          <ul class="small-list">
+            <li><b>Проверь каждую кнопку.</b> Просто проходись по всей клавиатуре.</li>
+            <li><b>Проверь комбинации.</b> Зажимай Ctrl / Shift / Alt и смотри, всё ли срабатывает.</li>
+            <li><b>Смотри на «Сейчас зажаты».</b> Там видно, не залипает ли какая-то клавиша.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="card-small">
+        <div class="card-small-inner">
+          <h2 class="small-title">Что означают поля</h2>
+          <ul class="small-list">
+            <li><b>event.key</b> — символ или название (например, <code>Enter</code>, <code>a</code>).</li>
+            <li><b>event.code</b> — «физическое» место на клавиатуре (полезно для игр).</li>
+            <li><b>keyCode</b> — старый формат, ещё используют в старых программах.</li>
+            <li><b>Расположение</b> — левая/правая клавиша или numpad.</li>
+          </ul>
+          <p class="footer-note">
+            Сайт работает прямо в браузере. Ничего не отправляется на сервер.
+          </p>
+        </div>
+      </section>
+    </aside>
+  </main>
 
   <script>
-    const zone = document.getElementById("zone");
-    const keyEl = document.getElementById("key");
-    const codeEl = document.getElementById("code");
-    const keyCodeEl = document.getElementById("keyCode");
-    const modsEl = document.getElementById("mods");
+    const mainKeyEl = document.getElementById("mainKey");
+    const metaKeyEl = document.getElementById("metaKey");
+    const metaCodeEl = document.getElementById("metaCode");
+    const metaKeyCodeEl = document.getElementById("metaKeyCode");
+    const metaLocationEl = document.getElementById("metaLocation");
 
-    zone.focus();
+    const modCtrlEl = document.getElementById("modCtrl");
+    const modAltEl = document.getElementById("modAlt");
+    const modShiftEl = document.getElementById("modShift");
+    const modMetaEl = document.getElementById("modMeta");
 
-    function mods(e) {
-      const arr = [];
-      if (e.ctrlKey) arr.push("Ctrl");
-      if (e.altKey) arr.push("Alt");
-      if (e.shiftKey) arr.push("Shift");
-      if (e.metaKey) arr.push("Win/Command");
-      return arr.length ? arr.join(" + ") : "—";
+    const pressedKeysEl = document.getElementById("pressedKeys");
+    const logListEl = document.getElementById("logList");
+    const clearLogBtn = document.getElementById("clearLogBtn");
+    const focusZone = document.getElementById("focusZone");
+    const pageRoot = document.getElementById("pageRoot");
+
+    const pressedSet = new Set();
+    const logData = [];
+    const LOG_LIMIT = 25;
+
+    function describeLocation(loc) {
+      switch (loc) {
+        case 1: return "Левая клавиша (например, Left Shift)";
+        case 2: return "Правая клавиша (например, Right Shift)";
+        case 3: return "Numpad";
+        default: return "Обычное расположение";
+      }
     }
 
-    window.addEventListener("keydown", (e) => {
-      keyEl.textContent = e.key;
-      codeEl.textContent = e.code;
-      keyCodeEl.textContent = e.keyCode; // устаревшее, но показываем
-      modsEl.textContent = mods(e);
+    function updateMain(e) {
+      const key = e.key === " " ? "Space" : e.key;
 
-      // чтобы не срабатывали лишние действия типа прокрутки стрелками/пробелом
-      e.preventDefault();
-    }, { passive: false });
+      mainKeyEl.textContent = key;
+      mainKeyEl.classList.remove("empty");
+
+      metaKeyEl.textContent = String(e.key);
+      metaCodeEl.textContent = String(e.code);
+      metaKeyCodeEl.textContent = String(e.keyCode);
+      metaLocationEl.textContent = describeLocation(e.location);
+
+      modCtrlEl.classList.toggle("active", e.ctrlKey);
+      modAltEl.classList.toggle("active", e.altKey);
+      modShiftEl.classList.toggle("active", e.shiftKey);
+      modMetaEl.classList.toggle("active", e.metaKey);
+    }
+
+    function updatePressed() {
+      if (!pressedSet.size) {
+        pressedKeysEl.textContent = "Ничего не нажато.";
+        pressedKeysEl.classList.add("empty");
+        return;
+      }
+
+      const items = Array.from(pressedSet).sort();
+      pressedKeysEl.textContent = items.join(" + ");
+      pressedKeysEl.classList.remove("empty");
+    }
+
+    function addToLog(e) {
+      const time = new Date();
+      const hh = String(time.getHours()).padStart(2, "0");
+      const mm = String(time.getMinutes()).padStart(2, "0");
+      const ss = String(time.getSeconds()).padStart(2, "0");
+      const stamp = `${hh}:${mm}:${ss}`;
+
+      const entry = {
+        stamp,
+        key: e.key === " " ? "Space" : e.key,
+        code: e.code,
+        keyCode: e.keyCode,
+        mods: [
+          e.ctrlKey ? "Ctrl" : null,
+          e.altKey ? "Alt" : null,
+          e.shiftKey ? "Shift" : null,
+          e.metaKey ? "Win/⌘" : null
+        ].filter(Boolean).join(" + ") || "—"
+      };
+
+      logData.unshift(entry);
+      if (logData.length > LOG_LIMIT) {
+        logData.length = LOG_LIMIT;
+      }
+
+      renderLog();
+    }
+
+    function renderLog() {
+      if (!logData.length) {
+        logListEl.innerHTML = '<div class="log-empty">Сделай пару нажатий — они появятся здесь.</div>';
+        return;
+      }
+
+      logListEl.innerHTML = logData.map(item => `
+        <div class="log-row">
+          <div class="log-left">
+            <span class="log-key">${escapeHtml(item.key)}</span>
+            <span class="log-meta">${escapeHtml(item.code)}</span>
+          </div>
+          <div class="log-meta">
+            ${escapeHtml(item.stamp)} · code: ${escapeHtml(String(item.keyCode))} · ${escapeHtml(item.mods)}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function handleKeyDown(e) {
+      // чтобы страница не прокручивалась от пробела и стрелок
+      const blockScrollKeys = [" ", "Spacebar", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown"];
+      if (blockScrollKeys.includes(e.key)) {
+        e.preventDefault();
+      }
+
+      updateMain(e);
+
+      const id = e.code || e.key || String(e.keyCode);
+      pressedSet.add(id);
+      updatePressed();
+
+      if (!e.repeat) {
+        addToLog(e);
+      }
+    }
+
+    function handleKeyUp(e) {
+      const id = e.code || e.key || String(e.keyCode);
+      pressedSet.delete(id);
+      updatePressed();
+    }
+
+    function handleBlur() {
+      pressedSet.clear();
+      updatePressed();
+
+      modCtrlEl.classList.remove("active");
+      modAltEl.classList.remove("active");
+      modShiftEl.classList.remove("active");
+      modMetaEl.classList.remove("active");
+    }
+
+    clearLogBtn.addEventListener("click", () => {
+      logData.length = 0;
+      renderLog();
+    });
+
+    // Ставим фокус при клике на основную карточку и фон
+    focusZone.addEventListener("click", () => {
+      focusZone.focus({ preventScroll: true });
+    });
+
+    pageRoot.addEventListener("click", () => {
+      focusZone.focus({ preventScroll: true });
+    });
+
+    window.addEventListener("keydown", handleKeyDown, { passive: false });
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+
+    // стартовое состояние
+    renderLog();
+    focusZone.tabIndex = 0;
+    focusZone.focus({ preventScroll: true });
   </script>
 </body>
 </html>
