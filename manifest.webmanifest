@@ -1,1 +1,13 @@
+{
+  "name": "Keyboard Tester",
+  "short_name": "Keyboard",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0b12",
+  "theme_color": "#0b0b12",
+  "description": "Keyboard tester with visual keyboard, arrows, navigation cluster and numpad. Works locally.",
+  "lang": "ru",
+  "icons": []
+}
 
